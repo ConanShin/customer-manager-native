@@ -4,10 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
-import '../../auth/data/auth_repository.dart';
 
 class CustomerListScreen extends ConsumerStatefulWidget {
-  const CustomerListScreen({super.key});
+  final String filter; // 'all', 'purchase', 'repair'
+
+  const CustomerListScreen({super.key, this.filter = 'all'});
 
   @override
   ConsumerState<CustomerListScreen> createState() => _CustomerListScreenState();
@@ -28,6 +29,18 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     final now = DateTime.now();
 
     return customers.where((customer) {
+      // 0. Tab Filter (Purchase/Repair)
+      if (widget.filter == 'purchase') {
+        // Simple logic: Has hearing aid or bought something
+        final hasHearingAid =
+            customer.hearingAid != null && customer.hearingAid!.isNotEmpty;
+        if (!hasHearingAid) return false;
+      } else if (widget.filter == 'repair') {
+        // Simple logic: has '수리' in note
+        final hasRepairNote = customer.note?.contains('수리') ?? false;
+        if (!hasRepairNote) return false;
+      }
+
       // 1. Text Search
       final matchesQuery =
           customer.name.toLowerCase().contains(query) ||
@@ -39,10 +52,6 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       if (_selectedFilterIndex == 0) return true;
 
       // Filter logic based on Legacy App:
-      // "1W", "3W", "7W" seem to imply customers who need checking or visited recently?
-      // Assuming it filters by `updatedAt` or `joinDate` or maybe `hearingAidPurchaseDate`?
-      // For now, let's filter by `updatedAt` within the timeframe.
-
       final registrationDate = customer.registrationDate;
       if (registrationDate == null || registrationDate.isEmpty)
         return _selectedFilterIndex == 0;
@@ -65,47 +74,25 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     }).toList();
   }
 
+  String get _title {
+    switch (widget.filter) {
+      case 'purchase':
+        return '고객 관리 (구매)';
+      case 'repair':
+        return '고객 관리 (수리)';
+      default:
+        return '고객 관리';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final customersAsync = ref.watch(customersListProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('고객 관리'), // Customer Manager
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('로그아웃'),
-                  content: const Text('정말 로그아웃 하시겠습니까?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('취소'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('로그아웃'),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirmed == true) {
-                await ref.read(authServiceProvider).signOut();
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Settings
-            },
-          ),
-        ],
+        title: Text(_title),
+        // Actions removed as they are now in the Settings tab
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -178,6 +165,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab_${widget.filter}',
         onPressed: () => context.go('/add'),
         child: const Icon(Icons.add),
       ),
