@@ -52,22 +52,59 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       if (_selectedFilterIndex == 0) return true;
 
       // Filter logic based on Legacy App:
-      final registrationDate = customer.registrationDate;
-      if (registrationDate == null || registrationDate.isEmpty)
+      String? dateToUse = customer.registrationDate;
+
+      // Helper to parse potential custom formats
+      DateTime? parseDate(String? dateStr) {
+        if (dateStr == null || dateStr.isEmpty) return null;
+        // Normalize: 2023.05.05 -> 2023-05-05, 2023/05/05 -> 2023-05-05
+        final normalized = dateStr.replaceAll('.', '-').replaceAll('/', '-');
+        return DateTime.tryParse(normalized);
+      }
+
+      // Logic Update: Check Hearing Aid dates too.
+      // If a customer bought a hearing aid recently, they should fall into the "1 Week" etc. buckets (Follow-up)
+      if (customer.hearingAid != null && customer.hearingAid!.isNotEmpty) {
+        // Collect all dates (registration + hearing aid dates)
+        List<String> validDates = [];
+        if (parseDate(dateToUse) != null) {
+          validDates.add(dateToUse!);
+        }
+        for (final ha in customer.hearingAid!) {
+          if (parseDate(ha.date) != null) {
+            validDates.add(ha.date);
+          }
+        }
+
+        // Find the most recent date
+        validDates.sort((a, b) => parseDate(b)!.compareTo(parseDate(a)!));
+        if (validDates.isNotEmpty) {
+          dateToUse = validDates.first;
+        }
+      }
+
+      if (dateToUse == null || dateToUse.isEmpty)
         return _selectedFilterIndex == 0;
 
-      final dateToCheck = DateTime.tryParse(registrationDate) ?? now;
+      final dateToCheck = parseDate(dateToUse);
+      if (dateToCheck == null)
+        return false; // Exclude invalid dates from specific filters
+
       final diff = now.difference(dateToCheck).inDays;
 
       switch (_selectedFilterIndex) {
         case 1: // 1 Week
-          return diff <= 7;
+          return diff >= 0 && diff <= 10; // Allow a bit of buffer
         case 2: // 3 Weeks
-          return diff <= 21;
+          return diff >= 14 && diff <= 28; // 2-4 weeks window
         case 3: // 7 Weeks
-          return diff <= 49;
+          return diff >= 42 && diff <= 56; // 6-8 weeks window
         case 4: // 1 Year
-          return diff <= 365;
+          return diff >= 335 && diff <= 395; // +/- 1 month
+        case 5: // 2 Years
+          return diff >= 700 && diff <= 760; // +/- 1 month
+        case 6: // 5 Years
+          return diff >= 1795 && diff <= 1855; // +/- 1 month
         default:
           return true;
       }
@@ -134,6 +171,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                 _buildFilterChip(3, '7주'),
                 const SizedBox(width: 8),
                 _buildFilterChip(4, '1년'),
+                const SizedBox(width: 8),
+                _buildFilterChip(5, '2년'),
+                const SizedBox(width: 8),
+                _buildFilterChip(6, '5년'),
               ],
             ),
           ),
