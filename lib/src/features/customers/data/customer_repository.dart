@@ -83,12 +83,40 @@ class CustomerRepository {
   Future<void> addCustomer(Customer customer) async {
     final json = customer.toJson();
     json.remove('id');
+
+    // Explicitly convert nested objects to avoid "Instance of _HearingAid" error
+    if (json['hearingAid'] is List) {
+      json['hearingAid'] = (json['hearingAid'] as List).map((e) {
+        // Check if it's already a map or needs conversion
+        if (e is HearingAid) return e.toJson();
+        // If generic object (rare), try dynamic call or leave it
+        try {
+          return (e as dynamic).toJson();
+        } catch (_) {
+          return e;
+        }
+      }).toList();
+    }
+
     await _customersRef().push().set(json);
   }
 
   Future<void> updateCustomer(Customer customer) async {
     final json = customer.toJson();
     json.remove('id');
+
+    // Explicitly convert nested objects to avoid "Instance of _HearingAid" error
+    if (json['hearingAid'] is List) {
+      json['hearingAid'] = (json['hearingAid'] as List).map((e) {
+        if (e is HearingAid) return e.toJson();
+        try {
+          return (e as dynamic).toJson();
+        } catch (_) {
+          return e;
+        }
+      }).toList();
+    }
+
     await _customersRef().child(customer.id).set(json);
   }
 

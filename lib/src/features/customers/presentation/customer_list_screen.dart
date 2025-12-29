@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
+import 'customer_detail_sheet.dart';
 
 class CustomerListScreen extends ConsumerStatefulWidget {
   final String filter; // 'all', 'purchase', 'repair'
@@ -235,10 +236,15 @@ class _CustomerListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () => context.go('/edit/${customer.id}'),
-      leading: CircleAvatar(
-        child: Text(customer.name.isNotEmpty ? customer.name[0] : '?'),
-      ),
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          builder: (context) => CustomerDetailSheet(customer: customer),
+        );
+      },
+      leading: null,
       title: Text(
         customer.name,
         style: const TextStyle(fontWeight: FontWeight.bold),
