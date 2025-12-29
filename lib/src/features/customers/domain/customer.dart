@@ -21,6 +21,7 @@ abstract class Customer with _$Customer {
     required String id,
     required String name,
     String? age,
+    String? birthDate, // Format: YYYY-MM-DD
     String? sex, // "Male" or "Female"
     String? phoneNumber,
     String? mobilePhoneNumber,

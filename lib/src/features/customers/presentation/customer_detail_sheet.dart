@@ -22,7 +22,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
 
   // Controllers (Initialized on demand or keep all? Keeping all is easier for state preservation)
   final _nameController = TextEditingController();
-  final _ageController = TextEditingController();
+  // final _ageController = TextEditingController(); // Removed
+  final _birthDateController = TextEditingController(); // Added
   final _mobileController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
@@ -45,7 +46,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
 
   void _resetControllers() {
     _nameController.text = _customer.name;
-    _ageController.text = _customer.age ?? '';
+    // _ageController.text = _customer.age ?? '';
+    _birthDateController.text = _customer.birthDate ?? ''; // Load birthDate
     _mobileController.text = _customer.mobilePhoneNumber ?? '';
     _phoneController.text = _customer.phoneNumber ?? '';
     _addressController.text = _customer.address ?? '';
@@ -61,7 +63,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
   @override
   void dispose() {
     _nameController.dispose();
-    _ageController.dispose();
+    // _ageController.dispose();
+    _birthDateController.dispose(); // Dispose
     _mobileController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
@@ -84,13 +87,27 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
     });
   }
 
+  String _calculateAge(String? birthDateString) {
+    if (birthDateString == null || birthDateString.isEmpty) return '';
+    final birthDate = DateTime.tryParse(birthDateString);
+    if (birthDate == null) return '';
+    final now = DateTime.now();
+    int age = now.year - birthDate.year;
+    if (now.month < birthDate.month ||
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      age--;
+    }
+    return age.toString();
+  }
+
   Future<void> _save() async {
     setState(() => _isLoading = true);
     try {
-      // Build updated customer based on what was edited (or just use all controllers since they match)
+      // Build updated customer
       final updatedCustomer = _customer.copyWith(
         name: _nameController.text,
-        age: _ageController.text,
+        age: _calculateAge(_birthDateController.text),
+        birthDate: _birthDateController.text,
         sex: _sex,
         mobilePhoneNumber: _mobileController.text,
         phoneNumber: _phoneController.text,
@@ -223,9 +240,34 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    controller: _ageController,
-                    decoration: const InputDecoration(labelText: '나이'),
+                  child: InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate:
+                            DateTime.tryParse(_birthDateController.text) ??
+                            DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                        locale: const Locale('ko', 'KR'),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _birthDateController.text = picked.toString().split(
+                            ' ',
+                          )[0];
+                        });
+                      }
+                    },
+                    child: IgnorePointer(
+                      child: TextFormField(
+                        controller: _birthDateController,
+                        decoration: const InputDecoration(
+                          labelText: '생년월일',
+                          suffixIcon: Icon(Icons.cake),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -269,10 +311,11 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
                 ),
                 if (_customer.age != null && _customer.age!.isNotEmpty)
                   Text(
-                    '${_customer.age}세 • ${_customer.sex == 'Male' ? '남성' : '여성'}',
+                    '${_customer.age}세 • ${_customer.sex == 'Male' ? '남성' : '여성'}${_customer.birthDate != null ? '\n(${_customer.birthDate})' : ''}',
                     style: Theme.of(
                       context,
                     ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
                   ),
               ],
             ),

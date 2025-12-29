@@ -286,7 +286,7 @@ as String,
 /// @nodoc
 mixin _$Customer {
 
- String get id; String get name; String? get age; String? get sex;// "Male" or "Female"
+ String get id; String get name; String? get age; String? get birthDate; String? get sex;// "Male" or "Female"
  String? get phoneNumber; String? get mobilePhoneNumber; String? get address; String? get cardAvailability;// "Yes" or "No"
  String? get registrationDate;// Format: YYYY-MM-DD
  String? get batteryOrderDate; List<HearingAid>? get hearingAid; String? get note;
@@ -302,16 +302,16 @@ $CustomerCopyWith<Customer> get copyWith => _$CustomerCopyWithImpl<Customer>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&const DeepCollectionEquality().equals(other.hearingAid, hearingAid)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&const DeepCollectionEquality().equals(other.hearingAid, hearingAid)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,age,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,const DeepCollectionEquality().hash(hearingAid),note);
+int get hashCode => Object.hash(runtimeType,id,name,age,birthDate,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,const DeepCollectionEquality().hash(hearingAid),note);
 
 @override
 String toString() {
-  return 'Customer(id: $id, name: $name, age: $age, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, hearingAid: $hearingAid, note: $note)';
+  return 'Customer(id: $id, name: $name, age: $age, birthDate: $birthDate, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, hearingAid: $hearingAid, note: $note)';
 }
 
 
@@ -322,7 +322,7 @@ abstract mixin class $CustomerCopyWith<$Res>  {
   factory $CustomerCopyWith(Customer value, $Res Function(Customer) _then) = _$CustomerCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? age, String? sex, String? phoneNumber, String? mobilePhoneNumber, String? address, String? cardAvailability, String? registrationDate, String? batteryOrderDate, List<HearingAid>? hearingAid, String? note
+ String id, String name, String? age, String? birthDate, String? sex, String? phoneNumber, String? mobilePhoneNumber, String? address, String? cardAvailability, String? registrationDate, String? batteryOrderDate, List<HearingAid>? hearingAid, String? note
 });
 
 
@@ -339,11 +339,12 @@ class _$CustomerCopyWithImpl<$Res>
 
 /// Create a copy of Customer
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? hearingAid = freezed,Object? note = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? birthDate = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? hearingAid = freezed,Object? note = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,age: freezed == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
+as String?,birthDate: freezed == birthDate ? _self.birthDate : birthDate // ignore: cast_nullable_to_non_nullable
 as String?,sex: freezed == sex ? _self.sex : sex // ignore: cast_nullable_to_non_nullable
 as String?,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
 as String?,mobilePhoneNumber: freezed == mobilePhoneNumber ? _self.mobilePhoneNumber : mobilePhoneNumber // ignore: cast_nullable_to_non_nullable
@@ -438,10 +439,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? age,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? age,  String? birthDate,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Customer() when $default != null:
-return $default(_that.id,_that.name,_that.age,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.note);case _:
+return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.note);case _:
   return orElse();
 
 }
@@ -459,10 +460,10 @@ return $default(_that.id,_that.name,_that.age,_that.sex,_that.phoneNumber,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? age,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  String? note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? age,  String? birthDate,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _Customer():
-return $default(_that.id,_that.name,_that.age,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.note);case _:
+return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.note);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -479,10 +480,10 @@ return $default(_that.id,_that.name,_that.age,_that.sex,_that.phoneNumber,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? age,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  String? note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? age,  String? birthDate,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _Customer() when $default != null:
-return $default(_that.id,_that.name,_that.age,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.note);case _:
+return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.note);case _:
   return null;
 
 }
@@ -494,12 +495,13 @@ return $default(_that.id,_that.name,_that.age,_that.sex,_that.phoneNumber,_that.
 @JsonSerializable()
 
 class _Customer implements Customer {
-  const _Customer({required this.id, required this.name, this.age, this.sex, this.phoneNumber, this.mobilePhoneNumber, this.address, this.cardAvailability, this.registrationDate, this.batteryOrderDate, final  List<HearingAid>? hearingAid, this.note}): _hearingAid = hearingAid;
+  const _Customer({required this.id, required this.name, this.age, this.birthDate, this.sex, this.phoneNumber, this.mobilePhoneNumber, this.address, this.cardAvailability, this.registrationDate, this.batteryOrderDate, final  List<HearingAid>? hearingAid, this.note}): _hearingAid = hearingAid;
   factory _Customer.fromJson(Map<String, dynamic> json) => _$CustomerFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override final  String? age;
+@override final  String? birthDate;
 @override final  String? sex;
 // "Male" or "Female"
 @override final  String? phoneNumber;
@@ -534,16 +536,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&const DeepCollectionEquality().equals(other._hearingAid, _hearingAid)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&const DeepCollectionEquality().equals(other._hearingAid, _hearingAid)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,age,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,const DeepCollectionEquality().hash(_hearingAid),note);
+int get hashCode => Object.hash(runtimeType,id,name,age,birthDate,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,const DeepCollectionEquality().hash(_hearingAid),note);
 
 @override
 String toString() {
-  return 'Customer(id: $id, name: $name, age: $age, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, hearingAid: $hearingAid, note: $note)';
+  return 'Customer(id: $id, name: $name, age: $age, birthDate: $birthDate, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, hearingAid: $hearingAid, note: $note)';
 }
 
 
@@ -554,7 +556,7 @@ abstract mixin class _$CustomerCopyWith<$Res> implements $CustomerCopyWith<$Res>
   factory _$CustomerCopyWith(_Customer value, $Res Function(_Customer) _then) = __$CustomerCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? age, String? sex, String? phoneNumber, String? mobilePhoneNumber, String? address, String? cardAvailability, String? registrationDate, String? batteryOrderDate, List<HearingAid>? hearingAid, String? note
+ String id, String name, String? age, String? birthDate, String? sex, String? phoneNumber, String? mobilePhoneNumber, String? address, String? cardAvailability, String? registrationDate, String? batteryOrderDate, List<HearingAid>? hearingAid, String? note
 });
 
 
@@ -571,11 +573,12 @@ class __$CustomerCopyWithImpl<$Res>
 
 /// Create a copy of Customer
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? hearingAid = freezed,Object? note = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? birthDate = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? hearingAid = freezed,Object? note = freezed,}) {
   return _then(_Customer(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,age: freezed == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
+as String?,birthDate: freezed == birthDate ? _self.birthDate : birthDate // ignore: cast_nullable_to_non_nullable
 as String?,sex: freezed == sex ? _self.sex : sex // ignore: cast_nullable_to_non_nullable
 as String?,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
 as String?,mobilePhoneNumber: freezed == mobilePhoneNumber ? _self.mobilePhoneNumber : mobilePhoneNumber // ignore: cast_nullable_to_non_nullable

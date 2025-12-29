@@ -20,7 +20,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
 
   // Controllers
   final _nameController = TextEditingController();
-  final _ageController = TextEditingController();
+  // final _ageController = TextEditingController(); // Removed
+  final _birthDateController = TextEditingController(); // Added
   final _mobileController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
@@ -47,7 +48,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _ageController.dispose();
+    // _ageController.dispose();
+    _birthDateController.dispose();
     _mobileController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
@@ -75,7 +77,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   void _populateForm(Customer c) {
     setState(() {
       _nameController.text = c.name;
-      _ageController.text = c.age ?? '';
+      // _ageController.text = c.age ?? '';
+      _birthDateController.text = c.birthDate ?? '';
       _mobileController.text = c.mobilePhoneNumber ?? '';
       _phoneController.text = c.phoneNumber ?? '';
       _addressController.text = c.address ?? '';
@@ -89,6 +92,19 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
     });
   }
 
+  String _calculateAge(String? birthDateString) {
+    if (birthDateString == null || birthDateString.isEmpty) return '';
+    final birthDate = DateTime.tryParse(birthDateString);
+    if (birthDate == null) return '';
+    final now = DateTime.now();
+    int age = now.year - birthDate.year;
+    if (now.month < birthDate.month ||
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      age--;
+    }
+    return age.toString();
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -96,9 +112,10 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
 
     try {
       final customer = Customer(
-        id: widget.customerId ?? '', // ID handled by repo push() if empty
+        id: widget.customerId ?? '',
         name: _nameController.text,
-        age: _ageController.text,
+        age: _calculateAge(_birthDateController.text),
+        birthDate: _birthDateController.text,
         sex: _sex,
         mobilePhoneNumber: _mobileController.text,
         phoneNumber: _phoneController.text,
@@ -139,7 +156,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('삭제 확인'),
-        content: const Text('정말로 삭제하시겠습니까?'), // Really delete?
+        content: const Text('정말로 삭제하시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -175,8 +192,12 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(widget.customerId == null ? '새 고객' : '고객 정보 수정'),
+        title: Text(
+          widget.customerId == null ? '새 고객 등록' : '고객 정보 수정',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           if (widget.customerId != null)
             IconButton(
@@ -184,206 +205,335 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
               onPressed: _isLoading ? null : _delete,
               color: Colors.red,
             ),
-          IconButton(
-            icon: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.check),
-            onPressed: _isLoading ? null : _save,
+          const SizedBox(width: 8),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: TextButton(
+              onPressed: _isLoading ? null : _save,
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(
+                      '저장',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+            ),
           ),
         ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           children: [
-            _buildSectionHeader('기본 정보 (Basic Info)'),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: '이름 (Name)'),
-                    validator: (v) => v!.isEmpty ? '이름을 입력하세요' : null,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _ageController,
-                    decoration: const InputDecoration(labelText: '나이 (Age)'),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _sex,
-                    decoration: const InputDecoration(labelText: '성별 (Sex)'),
-                    items: const [
-                      DropdownMenuItem(value: 'Male', child: Text('남성 (Male)')),
-                      DropdownMenuItem(
-                        value: 'Female',
-                        child: Text('여성 (Female)'),
-                      ),
-                    ],
-                    onChanged: (val) => setState(() => _sex = val!),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _cardAvailability,
-                    decoration: const InputDecoration(
-                      labelText: '복지카드 (Welfare)',
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'Yes', child: Text('있음 (Yes)')),
-                      DropdownMenuItem(value: 'No', child: Text('없음 (No)')),
-                    ],
-                    onChanged: (val) =>
-                        setState(() => _cardAvailability = val!),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _mobileController,
-              decoration: const InputDecoration(labelText: '핸드폰 (Mobile)'),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _phoneController,
-              decoration: const InputDecoration(labelText: '자택 전화 (Phone)'),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _addressController,
-              decoration: const InputDecoration(labelText: '주소 (Address)'),
-            ),
-            const SizedBox(height: 24),
-
-            _buildSectionHeader('보청기 정보 (Hearing Aid)'),
-            const SizedBox(height: 8),
-            ..._buildHearingAidList(),
-            TextButton.icon(
-              onPressed: () => setState(
-                () => _hearingAids.add(
-                  const HearingAid(side: 'left', model: '', date: ''),
-                ),
-              ),
-              icon: const Icon(Icons.add),
-              label: const Text('보청기 추가 (Add Hearing Aid)'),
-            ),
-            const SizedBox(height: 16),
-            _buildDatePickerField(
-              '배터리 주문일 (Battery Order)',
-              _batteryOrderDateController,
-            ),
-
-            const SizedBox(height: 24),
-            _buildSectionHeader('기타 (Other)'),
-            const SizedBox(height: 16),
-            _buildDatePickerField(
-              '가입일 (Join Date)',
-              _registrationDateController,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _noteController,
-              decoration: const InputDecoration(labelText: '메모 (Note)'),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 50),
+            _buildBasicSection(),
+            const SizedBox(height: 20),
+            _buildContactSection(),
+            const SizedBox(height: 20),
+            _buildHearingAidSection(),
+            const SizedBox(height: 20),
+            _buildEtcSection(),
+            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
+  Widget _buildSectionCard({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Card(
+      elevation: 2,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Theme.of(context).colorScheme.primary),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ...children,
+          ],
+        ),
       ),
     );
   }
 
-  List<Widget> _buildHearingAidList() {
-    return _hearingAids.asMap().entries.map((entry) {
-      final index = entry.key;
-      final aid = entry.value;
-      return Card(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Row(
+  // --- 1. Basic Info ---
+  Widget _buildBasicSection() {
+    return _buildSectionCard(
+      title: '기본 정보',
+      children: [
+        TextFormField(
+          controller: _nameController,
+          decoration: _inputDecoration('이름'),
+          validator: (v) => v!.isEmpty ? '이름을 입력하세요' : null,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: _buildDatePickerField(
+                '생년월일',
+                _birthDateController,
+                icon: Icons.cake,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DropdownButton<String>(
-                    value: aid.side,
-                    items: const [
-                      DropdownMenuItem(value: 'left', child: Text('좌 (L)')),
-                      DropdownMenuItem(value: 'right', child: Text('우 (R)')),
+                  const Text(
+                    '성별',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 4),
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'Male', label: Text('남성')),
+                      ButtonSegment(value: 'Female', label: Text('여성')),
                     ],
-                    onChanged: (val) => setState(
-                      () => _hearingAids[index] = aid.copyWith(side: val!),
+                    selected: {_sex},
+                    onSelectionChanged: (v) => setState(() => _sex = v.first),
+                    showSelectedIcon: false,
+                    style: ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      initialValue: aid.model,
-                      decoration: const InputDecoration(labelText: '모델명'),
-                      onChanged: (val) => setState(
-                        () => _hearingAids[index] = aid.copyWith(model: val),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle, color: Colors.red),
-                    onPressed: () =>
-                        setState(() => _hearingAids.removeAt(index)),
                   ),
                 ],
               ),
-              _buildDatePickerFieldInline(
-                '구입일',
-                aid.date,
-                (val) => setState(
-                  () => _hearingAids[index] = aid.copyWith(date: val),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-    }).toList();
+      ],
+    );
   }
 
-  Widget _buildDatePickerField(String label, TextEditingController controller) {
+  // --- 2. Contact ---
+  Widget _buildContactSection() {
+    return _buildSectionCard(
+      title: '연락처',
+      children: [
+        TextFormField(
+          controller: _mobileController,
+          decoration: _inputDecoration('휴대전화', icon: Icons.smartphone),
+          keyboardType: TextInputType.phone,
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _phoneController,
+          decoration: _inputDecoration('유선전화', icon: Icons.phone),
+          keyboardType: TextInputType.phone,
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _addressController,
+          decoration: _inputDecoration('주소', icon: Icons.home),
+        ),
+      ],
+    );
+  }
+
+  // --- 3. Hearing Aid ---
+  Widget _buildHearingAidSection() {
+    return _buildSectionCard(
+      title: '보청기 정보',
+      children: [
+        if (_hearingAids.isEmpty)
+          const Center(
+            child: Text('등록된 보청기가 없습니다.', style: TextStyle(color: Colors.grey)),
+          )
+        else
+          ..._hearingAids.asMap().entries.map((entry) {
+            final index = entry.key;
+            final aid = entry.value;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      DropdownButton<String>(
+                        value: aid.side,
+                        underline: Container(),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'left',
+                            child: Text(
+                              '좌 (L)',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'right',
+                            child: Text(
+                              '우 (R)',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                        onChanged: (val) => setState(
+                          () => _hearingAids[index] = aid.copyWith(side: val!),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: aid.model,
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            hintText: '모델명',
+                            border: InputBorder.none,
+                          ),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          onChanged: (val) => setState(
+                            () =>
+                                _hearingAids[index] = aid.copyWith(model: val),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.remove_circle_outline,
+                          color: Colors.red,
+                        ),
+                        onPressed: () =>
+                            setState(() => _hearingAids.removeAt(index)),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 1),
+                  _buildDatePickerInline(
+                    date: aid.date,
+                    onChanged: (val) => setState(
+                      () => _hearingAids[index] = aid.copyWith(date: val),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => setState(
+            () => _hearingAids.add(
+              const HearingAid(side: 'left', model: '', date: ''),
+            ),
+          ),
+          icon: const Icon(Icons.add),
+          label: const Text('보청기 추가'),
+        ),
+        const SizedBox(height: 16),
+        _buildDatePickerField(
+          '배터리 주문일',
+          _batteryOrderDateController,
+          icon: Icons.battery_charging_full,
+        ),
+      ],
+    );
+  }
+
+  // --- 4. Etc ---
+  Widget _buildEtcSection() {
+    return _buildSectionCard(
+      title: '기타 정보',
+      children: [
+        _buildDatePickerField(
+          '가입일',
+          _registrationDateController,
+          icon: Icons.calendar_today,
+        ),
+        const SizedBox(height: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              '복지카드 여부',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 4),
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(
+                  value: 'Yes',
+                  label: Text('있음'),
+                  icon: Icon(Icons.check_circle_outline),
+                ),
+                ButtonSegment(
+                  value: 'No',
+                  label: Text('없음'),
+                  icon: Icon(Icons.cancel_outlined),
+                ),
+              ],
+              selected: {_cardAvailability},
+              onSelectionChanged: (v) =>
+                  setState(() => _cardAvailability = v.first),
+              showSelectedIcon: false,
+              style: ButtonStyle(
+                visualDensity: VisualDensity.compact,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _noteController,
+          decoration: _inputDecoration('메모', icon: Icons.note),
+          maxLines: 4,
+        ),
+      ],
+    );
+  }
+
+  // --- Helpers ---
+
+  InputDecoration _inputDecoration(String label, {IconData? icon}) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: icon != null ? Icon(icon, size: 20) : null,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+    );
+  }
+
+  Widget _buildDatePickerField(
+    String label,
+    TextEditingController controller, {
+    IconData? icon,
+  }) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
           initialDate: DateTime.tryParse(controller.text) ?? DateTime.now(),
           firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
+          lastDate: DateTime.now(),
+          locale: const Locale('ko', 'KR'),
         );
         if (picked != null) {
           setState(
@@ -391,42 +541,50 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
           );
         }
       },
+      borderRadius: BorderRadius.circular(12),
       child: IgnorePointer(
         child: TextFormField(
           controller: controller,
-          decoration: InputDecoration(
-            labelText: label,
-            suffixIcon: const Icon(Icons.calendar_today),
+          decoration: _inputDecoration(
+            label,
+            icon: icon ?? Icons.calendar_today,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDatePickerFieldInline(
-    String label,
-    String date,
-    ValueChanged<String> onChanged,
-  ) {
+  Widget _buildDatePickerInline({
+    required String date,
+    required ValueChanged<String> onChanged,
+  }) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
           initialDate: DateTime.tryParse(date) ?? DateTime.now(),
           firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
+          lastDate: DateTime.now(),
+          locale: const Locale('ko', 'KR'),
         );
         if (picked != null) {
           onChanged(DateFormat('yyyy-MM-dd').format(picked));
         }
       },
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          suffixIcon: const Icon(Icons.calendar_today, size: 16),
-          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+            const SizedBox(width: 8),
+            Text(
+              date.isEmpty ? '구입일 선택' : date,
+              style: TextStyle(
+                color: date.isEmpty ? Colors.grey : Colors.black,
+              ),
+            ),
+          ],
         ),
-        child: Text(date.isEmpty ? '날짜 선택' : date),
       ),
     );
   }
