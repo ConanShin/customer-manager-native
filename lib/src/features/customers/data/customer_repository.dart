@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../domain/customer.dart';
+import '../domain/repair.dart';
 
 part 'customer_repository.g.dart';
 
@@ -10,11 +11,14 @@ class CustomerRepository {
   CustomerRepository(this._database);
 
   DatabaseReference _customersRef() => _database.ref('customers');
+  DatabaseReference _repairsRef() => _database.ref('repairs');
 
   Future<List<Customer>> getCustomers() async {
     try {
       print('Fetching customers from RTDB...');
+      print('Fetching customers from RTDB...');
       final snapshot = await _customersRef().get();
+      final repairsSnapshot = await _repairsRef().get();
       print('Snapshot fetched: exists=${snapshot.exists}');
 
       if (!snapshot.exists) {
@@ -23,23 +27,85 @@ class CustomerRepository {
       }
 
       final dynamic value = snapshot.value;
-      if (value == null) return [];
-
-      final data = Map<dynamic, dynamic>.from(value as Map);
       final List<Customer> customers = [];
 
-      for (final entry in data.entries) {
-        try {
-          // Convert the inner map safely
-          final safeMap = _convertMap(entry.value);
-          safeMap['id'] = entry.key.toString();
-
-          customers.add(Customer.fromJson(safeMap));
-        } catch (e) {
-          print('Error parsing customer ${entry.key}: $e');
+      if (value != null) {
+        final data = Map<dynamic, dynamic>.from(value as Map);
+        for (final entry in data.entries) {
+          try {
+            // Convert the inner map safely
+            final safeMap = _convertMap(entry.value);
+            safeMap['id'] = entry.key.toString();
+            customers.add(Customer.fromJson(safeMap));
+          } catch (e) {
+            print('Error parsing customer ${entry.key}: $e');
+          }
         }
       }
-      print('Successfully parsed ${customers.length} customers');
+      print('Successfully parsed ${customers.length} customers from main node');
+
+      // Parse repairs node as separate customers
+      final List<Customer> repairCustomers = [];
+      if (repairsSnapshot.exists && repairsSnapshot.value != null) {
+        final repairsData = Map<dynamic, dynamic>.from(
+          repairsSnapshot.value as Map,
+        );
+        repairsData.forEach((key, value) {
+          final customerId = key.toString();
+          if (value is Map) {
+            try {
+              final repairNodeMap = _convertMap(value);
+              final List<Repair> parsedRepairs = [];
+
+              // extract repairs
+              if (repairNodeMap.containsKey('repairReport')) {
+                final rawReport = repairNodeMap['repairReport'];
+                if (rawReport is List) {
+                  for (final item in rawReport) {
+                    if (item == null) continue;
+                    try {
+                      final safeMap = _convertMap(item);
+                      if (!safeMap.containsKey('id')) {
+                        safeMap['id'] = 'repair_${parsedRepairs.length}';
+                      }
+                      // Ensure required fields
+                      if (safeMap['date'] == null) safeMap['date'] = '';
+                      if (safeMap['content'] == null) safeMap['content'] = '';
+
+                      parsedRepairs.add(Repair.fromJson(safeMap));
+                    } catch (e) {
+                      print('Error parsing repair item for $customerId: $e');
+                    }
+                  }
+                }
+                // Remove repairReport from map to avoid confusion/failures in Customer.fromJson if it was strict
+                // (Customer.fromJson is permissive so it's fine, but we need to map to 'repairs')
+              }
+
+              // Create Customer
+              repairNodeMap['id'] = customerId;
+              repairNodeMap['repairs'] = parsedRepairs
+                  .map((e) => e.toJson())
+                  .toList();
+
+              // Handle potentially missing required fields for Customer
+              if (repairNodeMap['name'] == null)
+                repairNodeMap['name'] = 'Unknown';
+              if (repairNodeMap['address'] == null)
+                repairNodeMap['address'] = '';
+
+              repairCustomers.add(Customer.fromJson(repairNodeMap));
+            } catch (e) {
+              print('Error parsing repair customer $customerId: $e');
+            }
+          }
+        });
+      }
+      print('Parsed ${repairCustomers.length} customers from repairs node');
+
+      customers.addAll(repairCustomers);
+
+      print('Final combined customer count: ${customers.length}');
       return customers;
     } catch (e, stack) {
       print('Error in getCustomers: $e');
@@ -98,6 +164,18 @@ class CustomerRepository {
       }).toList();
     }
 
+    // Explicitly convert repairs list to avoid "Instance of _Repair" error
+    if (json['repairs'] is List) {
+      json['repairs'] = (json['repairs'] as List).map((e) {
+        if (e is Repair) return e.toJson();
+        try {
+          return (e as dynamic).toJson();
+        } catch (_) {
+          return e;
+        }
+      }).toList();
+    }
+
     await _customersRef().push().set(json);
   }
 
@@ -109,6 +187,18 @@ class CustomerRepository {
     if (json['hearingAid'] is List) {
       json['hearingAid'] = (json['hearingAid'] as List).map((e) {
         if (e is HearingAid) return e.toJson();
+        try {
+          return (e as dynamic).toJson();
+        } catch (_) {
+          return e;
+        }
+      }).toList();
+    }
+
+    // Explicitly convert repairs list to avoid "Instance of _Repair" error
+    if (json['repairs'] is List) {
+      json['repairs'] = (json['repairs'] as List).map((e) {
+        if (e is Repair) return e.toJson();
         try {
           return (e as dynamic).toJson();
         } catch (_) {

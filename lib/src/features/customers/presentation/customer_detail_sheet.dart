@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
 
@@ -339,11 +340,70 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildActionButton(Icons.phone, '전화', () {
-          /* Call Logic */
+          final mobile = _customer.mobilePhoneNumber;
+          final home = _customer.phoneNumber;
+          final hasMobile = mobile != null && mobile.isNotEmpty;
+          final hasHome = home != null && home.isNotEmpty;
+
+          if (hasMobile && hasHome) {
+            // Show selection sheet
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      '전화 걸기',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      leading: const Icon(Icons.smartphone),
+                      title: Text(mobile!),
+                      subtitle: const Text('휴대전화'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _makePhoneCall(mobile);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.phone),
+                      title: Text(home!),
+                      subtitle: const Text('유선전화'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _makePhoneCall(home);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (hasMobile) {
+            _makePhoneCall(mobile!);
+          } else if (hasHome) {
+            _makePhoneCall(home!);
+          } else {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('등록된 전화번호가 없습니다.')));
+          }
         }),
         const SizedBox(width: 32),
         _buildActionButton(Icons.message, '문자', () {
-          /* SMS Logic */
+          final mobile = _customer.mobilePhoneNumber;
+          if (mobile != null && mobile.isNotEmpty) {
+            _sendSms(mobile);
+          } else {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('휴대전화 번호가 없습니다.')));
+          }
         }),
       ],
     );
@@ -794,6 +854,38 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
         Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
       ],
     );
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber.replaceAll('-', ''), // Remove dashes for execution
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('전화를 걸 수 없습니다.')));
+      }
+    }
+  }
+
+  Future<void> _sendSms(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'sms',
+      path: phoneNumber.replaceAll('-', ''),
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('문자를 보낼 수 없습니다.')));
+      }
+    }
   }
 }
 

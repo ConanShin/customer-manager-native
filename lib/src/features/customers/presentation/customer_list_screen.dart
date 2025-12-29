@@ -108,9 +108,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
             customer.hearingAid != null && customer.hearingAid!.isNotEmpty;
         if (!hasHearingAid) return false;
       } else if (widget.filter == 'repair') {
-        // Simple logic: has '수리' in note
-        final hasRepairNote = customer.note?.contains('수리') ?? false;
-        if (!hasRepairNote) return false;
+        // Logic: has repairs in the new list
+        final hasRepairs =
+            customer.repairs != null && customer.repairs!.isNotEmpty;
+        if (!hasRepairs) return false;
       }
 
       // 1. Text Search
@@ -145,6 +146,29 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         for (final ha in customer.hearingAid!) {
           if (parseDate(ha.date) != null) {
             validDates.add(ha.date);
+          }
+        }
+
+        // Find the most recent date
+        validDates.sort((a, b) => parseDate(b)!.compareTo(parseDate(a)!));
+        if (validDates.isNotEmpty) {
+          dateToUse = validDates.first;
+        }
+        if (validDates.isNotEmpty) {
+          dateToUse = validDates.first;
+        }
+      }
+
+      // Logic Update: Check Repair dates too.
+      if (customer.repairs != null && customer.repairs!.isNotEmpty) {
+        // Collect all dates (registration + hearing aid + repair dates)
+        List<String> validDates = [];
+        if (parseDate(dateToUse) != null) {
+          validDates.add(dateToUse!);
+        }
+        for (final repair in customer.repairs!) {
+          if (parseDate(repair.date) != null) {
+            validDates.add(repair.date);
           }
         }
 
@@ -243,30 +267,31 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
           Column(
             children: [
               // Filter Chips
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+              if (widget.filter != 'repair')
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      _buildFilterChip(0, '전체'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(1, '1주'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(2, '3주'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(3, '7주'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(4, '1년'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(5, '2년'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(6, '5년'),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    _buildFilterChip(0, '전체'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(1, '1주'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(2, '3주'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(3, '7주'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(4, '1년'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(5, '2년'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(6, '5년'),
-                  ],
-                ),
-              ),
               // Customer List
               Expanded(
                 child: customersAsync.when(
@@ -336,6 +361,13 @@ class _CustomerListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasMobile =
+        customer.mobilePhoneNumber != null &&
+        customer.mobilePhoneNumber!.isNotEmpty;
+    final hasPhone =
+        customer.phoneNumber != null && customer.phoneNumber!.isNotEmpty;
+    final hasAddress = customer.address != null && customer.address!.isNotEmpty;
+
     return ListTile(
       onTap: () {
         showModalBottomSheet(
@@ -350,12 +382,68 @@ class _CustomerListTile extends StatelessWidget {
         customer.name,
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
-      subtitle: Text(
-        '${customer.address}\n${customer.mobilePhoneNumber}',
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
-      isThreeLine: true,
+      subtitle: (hasMobile || hasPhone || hasAddress)
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasMobile)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.smartphone,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          customer.mobilePhoneNumber!,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (hasPhone)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.phone, size: 14, color: Colors.grey),
+                        const SizedBox(width: 6),
+                        Text(
+                          customer.phoneNumber!,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (hasAddress)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.home, size: 14, color: Colors.grey),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            customer.address!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            )
+          : null,
+      isThreeLine: false, // Let the Column determine height naturally
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -373,6 +461,10 @@ class _CustomerListTile extends StatelessWidget {
                   color: Colors.blueGrey,
                 ),
               ),
+          ],
+          if (customer.repairs != null && customer.repairs!.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            const Icon(Icons.build, size: 16, color: Colors.orange),
           ],
         ],
       ),

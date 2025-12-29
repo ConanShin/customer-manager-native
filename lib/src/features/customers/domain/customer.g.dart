@@ -34,6 +34,9 @@ _Customer _$CustomerFromJson(Map<String, dynamic> json) => _Customer(
   hearingAid: (json['hearingAid'] as List<dynamic>?)
       ?.map((e) => HearingAid.fromJson(e as Map<String, dynamic>))
       .toList(),
+  repairs: (json['repairs'] as List<dynamic>?)
+      ?.map((e) => Repair.fromJson(e as Map<String, dynamic>))
+      .toList(),
   note: json['note'] as String?,
 );
 
@@ -50,5 +53,6 @@ Map<String, dynamic> _$CustomerToJson(_Customer instance) => <String, dynamic>{
   'registrationDate': instance.registrationDate,
   'batteryOrderDate': instance.batteryOrderDate,
   'hearingAid': instance.hearingAid,
+  'repairs': instance.repairs,
   'note': instance.note,
 };

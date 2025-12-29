@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'repair.dart';
 
 part 'customer.freezed.dart';
 part 'customer.g.dart';
@@ -30,6 +31,7 @@ abstract class Customer with _$Customer {
     String? registrationDate, // Format: YYYY-MM-DD
     String? batteryOrderDate,
     List<HearingAid>? hearingAid,
+    List<Repair>? repairs,
     String? note,
   }) = _Customer;
 
