@@ -18,11 +18,82 @@ class CustomerListScreen extends ConsumerStatefulWidget {
 class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedFilterIndex = 0; // 0: All, 1: 1W, 2: 3W, 3: 7W, 4: 1Y
+  bool _isSanitizing = false; // Loading state logic
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _runDataSanitization() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('데이터 정리'),
+        content: const Text('생년월일 자동 계산 및 불필요한 데이터를 정리하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('실행'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSanitizing = true);
+
+    try {
+      final logs = await ref
+          .read(customerRepositoryProvider)
+          .sanitizeAndMigrateData();
+
+      // Refresh list
+      ref.invalidate(customersListProvider);
+
+      if (mounted) {
+        setState(() => _isSanitizing = false);
+
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('정리 완료'),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 300,
+              child: logs.isEmpty
+                  ? const Center(child: Text('변경사항이 없습니다.'))
+                  : ListView.builder(
+                      itemCount: logs.length,
+                      itemBuilder: (context, index) => Text(
+                        logs[index],
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('확인'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSanitizing = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
   }
 
   List<Customer> _filterCustomers(List<Customer> customers) {
@@ -130,7 +201,19 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_title),
-        // Actions removed as they are now in the Settings tab
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'cleanup') _runDataSanitization();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'cleanup',
+                child: Text('데이터 정리 (Data Cleanup)'),
+              ),
+            ],
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -155,62 +238,80 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
           ),
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Filter Chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                _buildFilterChip(0, '전체'),
-                const SizedBox(width: 8),
-                _buildFilterChip(1, '1주'),
-                const SizedBox(width: 8),
-                _buildFilterChip(2, '3주'),
-                const SizedBox(width: 8),
-                _buildFilterChip(3, '7주'),
-                const SizedBox(width: 8),
-                _buildFilterChip(4, '1년'),
-                const SizedBox(width: 8),
-                _buildFilterChip(5, '2년'),
-                const SizedBox(width: 8),
-                _buildFilterChip(6, '5년'),
-              ],
-            ),
-          ),
-          // Customer List
-          Expanded(
-            child: customersAsync.when(
-              data: (customers) {
-                final filtered = _filterCustomers(customers);
+          Column(
+            children: [
+              // Filter Chips
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    _buildFilterChip(0, '전체'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(1, '1주'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(2, '3주'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(3, '7주'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(4, '1년'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(5, '2년'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(6, '5년'),
+                  ],
+                ),
+              ),
+              // Customer List
+              Expanded(
+                child: customersAsync.when(
+                  data: (customers) {
+                    final filtered = _filterCustomers(customers);
 
-                if (filtered.isEmpty) {
-                  return const Center(child: Text('검색 결과가 없습니다.'));
-                }
+                    if (filtered.isEmpty) {
+                      return const Center(child: Text('검색 결과가 없습니다.'));
+                    }
 
-                return RefreshIndicator(
-                  onRefresh: () => ref.refresh(customersListProvider.future),
-                  child: ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final customer = filtered[index];
-                      return _CustomerListTile(customer: customer);
-                    },
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('오류: $err')),
-            ),
+                    return RefreshIndicator(
+                      onRefresh: () =>
+                          ref.refresh(customersListProvider.future),
+                      child: ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final customer = filtered[index];
+                          return _CustomerListTile(customer: customer);
+                        },
+                      ),
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('오류: $err')),
+                ),
+              ),
+            ],
           ),
+          if (_isSanitizing)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'fab_${widget.filter}',
-        onPressed: () => context.go('/add'),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _isSanitizing
+          ? null
+          : FloatingActionButton(
+              heroTag: 'fab_${widget.filter}',
+              onPressed: () => context.go('/add'),
+              child: const Icon(Icons.add),
+            ),
     );
   }
 
@@ -255,16 +356,24 @@ class _CustomerListTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       isThreeLine: true,
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            customer.registrationDate ?? '',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          // Hearing Aid Model if exists
-          if (customer.hearingAid != null && customer.hearingAid!.isNotEmpty)
-            const Icon(Icons.hearing, size: 16, color: Colors.blueGrey),
+          if (customer.hearingAid != null) ...[
+            if (customer.hearingAid!.any((h) => h.side.toLowerCase() == 'left'))
+              const Icon(Icons.hearing, size: 20, color: Colors.blueGrey),
+            if (customer.hearingAid!.any(
+              (h) => h.side.toLowerCase() == 'right',
+            ))
+              Transform.flip(
+                flipX: true,
+                child: const Icon(
+                  Icons.hearing,
+                  size: 20,
+                  color: Colors.blueGrey,
+                ),
+              ),
+          ],
         ],
       ),
     );

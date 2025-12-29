@@ -123,6 +123,146 @@ class CustomerRepository {
   Future<void> deleteCustomer(String customerId) async {
     await _customersRef().child(customerId).remove();
   }
+
+  Future<List<String>> sanitizeAndMigrateData() async {
+    final logs = <String>[];
+    try {
+      final customers = await getCustomers();
+      for (final customer in customers) {
+        bool changed = false;
+        String logPrefix = '[${customer.name}]';
+
+        String? newBirthDate = customer.birthDate;
+        String? newAge = customer.age;
+        String? newMobile = customer.mobilePhoneNumber;
+        String? newPhone = customer.phoneNumber;
+        String? newAddress = customer.address;
+
+        // 1. Migrate Birth Date from Age or Fix incomplete Birth Date
+        if (newBirthDate == null || newBirthDate.isEmpty) {
+          if (newAge != null && newAge.isNotEmpty) {
+            // Handle "7세" or "7" in newAge
+            var val = newAge.trim();
+            if (val.endsWith('세')) {
+              val = val.substring(0, val.length - 1).trim();
+            }
+
+            final ageInt = int.tryParse(val);
+
+            if (ageInt != null) {
+              final now = DateTime.now();
+              final birthYear = now.year - ageInt;
+              newBirthDate = '$birthYear-01-01';
+              logs.add(
+                '$logPrefix Missing BirthDate. Age $newAge -> Created BirthDate $newBirthDate',
+              );
+              changed = true;
+            }
+          }
+        } else {
+          // Normalize input
+          final input = newBirthDate.trim();
+
+          // Check if birthDate is just a year (4 digits, optional dot/space)
+          // e.g. "1955", "1955.", "1955 "
+          final yearMatch = RegExp(r'^(\d{4})[\.\s]*$').firstMatch(input);
+
+          // Check for "Age(Year criteria)" format e.g. "57세(2019년기준)"
+          final ageYearMatch = RegExp(
+            r'^(\d+)\s*세\s?\((\d{4})년\s?기준\)$',
+          ).firstMatch(input);
+
+          // Check for Partial Age match (contains "n세") - safer to check LAST
+          // e.g. "7세", "만 7세", "7세입니다", "7 세"
+          final partialAgeMatch = RegExp(r'(\d+)\s*세').firstMatch(input);
+
+          // Check if it's JUST a number (1-3 digits) and looks like an age (< 150)
+          final numericMatch = RegExp(r'^(\d{1,3})$').firstMatch(input);
+
+          if (yearMatch != null) {
+            final year = yearMatch.group(1);
+            final oldDate = newBirthDate;
+            newBirthDate = '$year-01-01';
+            logs.add(
+              '$logPrefix Incomplete BirthDate $oldDate -> Fixed BirthDate $newBirthDate',
+            );
+            changed = true;
+          } else if (ageYearMatch != null) {
+            // It's "57세(2019년기준)" format
+            final ageInt = int.tryParse(ageYearMatch.group(1)!);
+            final criteriaYearInt = int.tryParse(ageYearMatch.group(2)!);
+
+            if (ageInt != null && criteriaYearInt != null) {
+              final birthYear = criteriaYearInt - ageInt;
+              final oldData = newBirthDate;
+              newBirthDate = '$birthYear-01-01';
+              logs.add(
+                '$logPrefix BirthDate field contained "$oldData" -> Calculated BirthDate $newBirthDate',
+              );
+              changed = true;
+            }
+          } else if (partialAgeMatch != null) {
+            // It contains "n세" somewhere
+            final ageInt = int.tryParse(partialAgeMatch.group(1)!);
+            if (ageInt != null) {
+              final now = DateTime.now();
+              final birthYear = now.year - ageInt;
+              final oldData = newBirthDate;
+              newBirthDate = '$birthYear-01-01';
+              logs.add(
+                '$logPrefix BirthDate field contained Age "$oldData" -> Converted to BirthDate $newBirthDate',
+              );
+              changed = true;
+            }
+          } else if (numericMatch != null) {
+            // Just a number, assume age if reasonable
+            final ageInt = int.tryParse(numericMatch.group(1)!);
+            if (ageInt != null && ageInt > 0 && ageInt < 150) {
+              final now = DateTime.now();
+              final birthYear = now.year - ageInt;
+              final oldData = newBirthDate;
+              newBirthDate = '$birthYear-01-01';
+              logs.add(
+                '$logPrefix BirthDate field was number "$oldData" -> Assumed Age -> BirthDate $newBirthDate',
+              );
+              changed = true;
+            }
+          }
+        }
+
+        // 2. Sanitize "0" values
+        if (newMobile == '0') {
+          newMobile = '';
+          logs.add('$logPrefix Cleared invalid mobile number "0"');
+          changed = true;
+        }
+        if (newPhone == '0') {
+          newPhone = '';
+          logs.add('$logPrefix Cleared invalid phone number "0"');
+          changed = true;
+        }
+        if (newAddress == '0') {
+          newAddress = '';
+          logs.add('$logPrefix Cleared invalid address "0"');
+          changed = true;
+        }
+
+        // 3. Save if changed
+        if (changed) {
+          final updated = customer.copyWith(
+            birthDate: newBirthDate,
+            mobilePhoneNumber: newMobile,
+            phoneNumber: newPhone,
+            address: newAddress,
+          );
+          await updateCustomer(updated);
+        }
+      }
+    } catch (e) {
+      logs.add('Error during sanitization: $e');
+    }
+    return logs;
+  }
 }
 
 @riverpod
