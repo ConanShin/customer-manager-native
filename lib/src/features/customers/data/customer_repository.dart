@@ -10,13 +10,33 @@ class CustomerRepository {
   CustomerRepository(this._client);
 
   Future<List<Customer>> getCustomers() async {
-    try {
-      final response = await _client
-          .from('customers')
-          .select('*, hearing_aids(*), repairs(*)');
+    List<dynamic> allData = [];
+    int from = 0;
+    int to = 999;
+    bool keepFetching = true;
 
-      final List<dynamic> data = response as List<dynamic>;
-      return data.map((e) => Customer.fromJson(e)).toList();
+    try {
+      while (keepFetching) {
+        final response = await _client
+            .from('customers')
+            .select('*, hearing_aids(*), repairs(*)')
+            .order('registration_date', ascending: false)
+            .range(from, to);
+
+        final List<dynamic> data = response as List<dynamic>;
+
+        if (data.isEmpty) {
+          keepFetching = false;
+        } else {
+          allData.addAll(data);
+          from += 1000;
+          to += 1000;
+          if (data.length < 1000) {
+            keepFetching = false;
+          }
+        }
+      }
+      return allData.map((e) => Customer.fromJson(e)).toList();
     } catch (e, stack) {
       print('Error fetching customers: $e');
       print(stack);
