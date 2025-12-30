@@ -55,7 +55,7 @@ final class CustomerRepositoryProvider
 }
 
 String _$customerRepositoryHash() =>
-    r'99e3ef594d634892fb040a1efced0ec361091e00';
+    r'c40a0b698fa04c381b284c69834239137ef75929';
 
 @ProviderFor(customersList)
 final customersListProvider = CustomersListProvider._();

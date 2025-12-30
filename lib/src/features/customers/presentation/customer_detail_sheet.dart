@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
+import '../../customers/domain/repair.dart';
 
 enum EditSection { none, basic, contact, hearingAid, note, etc }
 
@@ -217,6 +218,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
             _buildNoteSection(),
             const SizedBox(height: 16),
             _buildEtcSection(),
+            const SizedBox(height: 16),
+            _buildRepairSection(),
             const SizedBox(height: 40),
           ],
         ),
@@ -721,6 +724,208 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
     );
   }
 
+  // --- 6. Repair Section ---
+  Widget _buildRepairSection() {
+    // Repairs are read-only in this view (edit/add logic could be separate or added later)
+    // We sort by date descending (newest first)
+    final repairs = _customer.repairs ?? [];
+
+    // Sort logic
+    final sortedRepairs = List.of(repairs)
+      ..sort((a, b) {
+        final dateA =
+            DateTime.tryParse(a.date.replaceAll('.', '-')) ?? DateTime(1900);
+        final dateB =
+            DateTime.tryParse(b.date.replaceAll('.', '-')) ?? DateTime(1900);
+        return dateB.compareTo(dateA);
+      });
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header with Add Button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '수리 내역 (${sortedRepairs.length})',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                InkWell(
+                  onTap: _addRepair,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.add,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '추가',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            if (sortedRepairs.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  '수리 내역이 없습니다.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              )
+            else
+              Column(
+                children: sortedRepairs.asMap().entries.map((entry) {
+                  final isLast = entry.key == sortedRepairs.length - 1;
+                  final repair = entry.value;
+
+                  return Container(
+                    margin: EdgeInsets.only(bottom: isLast ? 0 : 12),
+                    padding: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      border: isLast
+                          ? null
+                          : Border(
+                              bottom: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).dividerColor.withOpacity(0.1),
+                              ),
+                            ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Date & Status
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              repair.date,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: repair.isCompleted
+                                    ? Colors.green.withOpacity(0.1)
+                                    : Colors.orange.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                repair.isCompleted ? '완료' : '진행중',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: repair.isCompleted
+                                      ? Colors.green[700]
+                                      : Colors.orange[800],
+                                ),
+                              ),
+                            ),
+                            // Complete Button for In Progress
+                            if (!repair.isCompleted)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: InkWell(
+                                  onTap: () => _markRepairCompleted(repair),
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(
+                                        context,
+                                      ).primaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Theme.of(
+                                          context,
+                                        ).primaryColor.withOpacity(0.5),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '완료 처리',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(width: 16),
+                        // Content & Cost
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                repair.content,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              if (repair.cost != null &&
+                                  repair.cost!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  '비용: ${repair.cost}원',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // --- Helper Widgets ---
 
   Widget _buildActionButton(IconData icon, String label, VoidCallback onTap) {
@@ -854,6 +1059,76 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
         Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
       ],
     );
+  }
+
+  Future<void> _addRepair() async {
+    final newRepair = await showDialog<Repair>(
+      context: context,
+      builder: (context) => _AddRepairDialog(),
+    );
+
+    if (newRepair != null) {
+      if (mounted) setState(() => _isLoading = true);
+      try {
+        final currentRepairs = List<Repair>.from(_customer.repairs ?? []);
+        currentRepairs.add(newRepair);
+
+        final updatedCustomer = _customer.copyWith(repairs: currentRepairs);
+
+        await ref
+            .read(customerRepositoryProvider)
+            .updateCustomer(updatedCustomer);
+
+        // Refresh local state to show it immediately
+        setState(() {
+          _customer = updatedCustomer;
+        });
+
+        ref.invalidate(customersListProvider);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error adding repair: $e')));
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _markRepairCompleted(Repair targetRepair) async {
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      // Find index by ID if possible, otherwise by content/date match
+      final repairs = List<Repair>.from(_customer.repairs ?? []);
+      final index = repairs.indexWhere((r) => r.id == targetRepair.id);
+
+      if (index != -1) {
+        repairs[index] = targetRepair.copyWith(isCompleted: true);
+
+        final updatedCustomer = _customer.copyWith(repairs: repairs);
+
+        await ref
+            .read(customerRepositoryProvider)
+            .updateCustomer(updatedCustomer);
+
+        // Refresh local state
+        setState(() {
+          _customer = updatedCustomer;
+        });
+
+        ref.invalidate(customersListProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating repair: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
@@ -1065,6 +1340,178 @@ class __AddHearingAidDialogState extends State<_AddHearingAidDialog> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AddRepairDialog extends StatefulWidget {
+  @override
+  __AddRepairDialogState createState() => __AddRepairDialogState();
+}
+
+class __AddRepairDialogState extends State<_AddRepairDialog> {
+  final _contentController = TextEditingController();
+  final _costController = TextEditingController();
+  final _dateController = TextEditingController(
+    text: DateTime.now().toString().split(' ')[0],
+  );
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      locale: const Locale('ko', 'KR'),
+    );
+    if (picked != null) {
+      setState(() {
+        _dateController.text = picked.toString().split(' ')[0];
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '수리 내역 추가',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Content
+              TextFormField(
+                controller: _contentController,
+                decoration: InputDecoration(
+                  labelText: '수리 내용',
+                  hintText: '예: 스피커 교체',
+                  prefixIcon: const Icon(Icons.build),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 16),
+
+              // Cost
+              TextFormField(
+                controller: _costController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: '비용 (선택)',
+                  hintText: '예: 50000',
+                  prefixIcon: const Icon(Icons.attach_money),
+                  suffixText: '원',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Date Picker
+              InkWell(
+                onTap: _pickDate,
+                borderRadius: BorderRadius.circular(12),
+                child: IgnorePointer(
+                  child: TextFormField(
+                    controller: _dateController,
+                    decoration: InputDecoration(
+                      labelText: '접수일',
+                      suffixIcon: const Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        '취소',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        if (_contentController.text.isNotEmpty) {
+                          Navigator.pop(
+                            context,
+                            Repair(
+                              id: 'repair_${DateTime.now().millisecondsSinceEpoch}',
+                              date: _dateController.text,
+                              content: _contentController.text,
+                              cost: _costController.text,
+                              isCompleted: false,
+                            ),
+                          );
+                        } else {
+                          // Hint required?
+                        }
+                      },
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        '추가',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

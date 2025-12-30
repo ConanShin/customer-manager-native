@@ -96,68 +96,6 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     }
   }
 
-  Future<void> _runMigration(BuildContext context, WidgetRef ref) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Supabase 이관'),
-        content: const Text(
-          'Supabase로 데이터를 이관하시겠습니까?\n'
-          '이 작업은 Firebase 데이터를 읽어서 Supabase에 저장을 시도합니다.\n'
-          'Supabase 프로젝트 설정 및 API 키가 올바른지 확인해주세요.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('실행'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    if (context.mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    try {
-      await ref.read(customerRepositoryProvider).migrateToSupabase();
-
-      if (context.mounted) {
-        Navigator.pop(context); // Close loading
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('이관 완료'),
-            content: const Text('데이터 이관 작업이 완료되었습니다.\n로그(console)를 확인해주세요.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('확인'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context); // Close loading
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Migration Error: $e')));
-      }
-    }
-  }
-
   List<Customer> _filterCustomers(List<Customer> customers) {
     final query = _searchController.text.toLowerCase();
     final now = DateTime.now();

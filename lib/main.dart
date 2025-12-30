@@ -5,12 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/config/app_router.dart';
 import 'src/config/app_theme.dart';
 import 'firebase_options.dart';
-import 'src/services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await SupabaseService.initialize();
 
   runApp(const ProviderScope(child: MyApp()));
 }
