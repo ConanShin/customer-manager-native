@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$HearingAid {
 
  String get side;// "left" or "right"
- String get model; String get date;
+ String get model; String get date;@JsonKey(name: 'customer_id') String? get customerId;
 /// Create a copy of HearingAid
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $HearingAidCopyWith<HearingAid> get copyWith => _$HearingAidCopyWithImpl<Hearing
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HearingAid&&(identical(other.side, side) || other.side == side)&&(identical(other.model, model) || other.model == model)&&(identical(other.date, date) || other.date == date));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HearingAid&&(identical(other.side, side) || other.side == side)&&(identical(other.model, model) || other.model == model)&&(identical(other.date, date) || other.date == date)&&(identical(other.customerId, customerId) || other.customerId == customerId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,side,model,date);
+int get hashCode => Object.hash(runtimeType,side,model,date,customerId);
 
 @override
 String toString() {
-  return 'HearingAid(side: $side, model: $model, date: $date)';
+  return 'HearingAid(side: $side, model: $model, date: $date, customerId: $customerId)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $HearingAidCopyWith<$Res>  {
   factory $HearingAidCopyWith(HearingAid value, $Res Function(HearingAid) _then) = _$HearingAidCopyWithImpl;
 @useResult
 $Res call({
- String side, String model, String date
+ String side, String model, String date,@JsonKey(name: 'customer_id') String? customerId
 });
 
 
@@ -66,12 +66,13 @@ class _$HearingAidCopyWithImpl<$Res>
 
 /// Create a copy of HearingAid
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? side = null,Object? model = null,Object? date = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? side = null,Object? model = null,Object? date = null,Object? customerId = freezed,}) {
   return _then(_self.copyWith(
 side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
 as String,model: null == model ? _self.model : model // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,
+as String,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String side,  String model,  String date)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String side,  String model,  String date, @JsonKey(name: 'customer_id')  String? customerId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HearingAid() when $default != null:
-return $default(_that.side,_that.model,_that.date);case _:
+return $default(_that.side,_that.model,_that.date,_that.customerId);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.side,_that.model,_that.date);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String side,  String model,  String date)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String side,  String model,  String date, @JsonKey(name: 'customer_id')  String? customerId)  $default,) {final _that = this;
 switch (_that) {
 case _HearingAid():
-return $default(_that.side,_that.model,_that.date);case _:
+return $default(_that.side,_that.model,_that.date,_that.customerId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +198,10 @@ return $default(_that.side,_that.model,_that.date);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String side,  String model,  String date)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String side,  String model,  String date, @JsonKey(name: 'customer_id')  String? customerId)?  $default,) {final _that = this;
 switch (_that) {
 case _HearingAid() when $default != null:
-return $default(_that.side,_that.model,_that.date);case _:
+return $default(_that.side,_that.model,_that.date,_that.customerId);case _:
   return null;
 
 }
@@ -212,13 +213,14 @@ return $default(_that.side,_that.model,_that.date);case _:
 @JsonSerializable()
 
 class _HearingAid implements HearingAid {
-  const _HearingAid({required this.side, required this.model, required this.date});
+  const _HearingAid({required this.side, required this.model, required this.date, @JsonKey(name: 'customer_id') this.customerId});
   factory _HearingAid.fromJson(Map<String, dynamic> json) => _$HearingAidFromJson(json);
 
 @override final  String side;
 // "left" or "right"
 @override final  String model;
 @override final  String date;
+@override@JsonKey(name: 'customer_id') final  String? customerId;
 
 /// Create a copy of HearingAid
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +235,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HearingAid&&(identical(other.side, side) || other.side == side)&&(identical(other.model, model) || other.model == model)&&(identical(other.date, date) || other.date == date));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HearingAid&&(identical(other.side, side) || other.side == side)&&(identical(other.model, model) || other.model == model)&&(identical(other.date, date) || other.date == date)&&(identical(other.customerId, customerId) || other.customerId == customerId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,side,model,date);
+int get hashCode => Object.hash(runtimeType,side,model,date,customerId);
 
 @override
 String toString() {
-  return 'HearingAid(side: $side, model: $model, date: $date)';
+  return 'HearingAid(side: $side, model: $model, date: $date, customerId: $customerId)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$HearingAidCopyWith<$Res> implements $HearingAidCopyWith<$
   factory _$HearingAidCopyWith(_HearingAid value, $Res Function(_HearingAid) _then) = __$HearingAidCopyWithImpl;
 @override @useResult
 $Res call({
- String side, String model, String date
+ String side, String model, String date,@JsonKey(name: 'customer_id') String? customerId
 });
 
 
@@ -270,12 +272,13 @@ class __$HearingAidCopyWithImpl<$Res>
 
 /// Create a copy of HearingAid
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? side = null,Object? model = null,Object? date = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? side = null,Object? model = null,Object? date = null,Object? customerId = freezed,}) {
   return _then(_HearingAid(
 side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
 as String,model: null == model ? _self.model : model // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,
+as String,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -286,11 +289,11 @@ as String,
 /// @nodoc
 mixin _$Customer {
 
- String get id; String get name; String? get age; String? get birthDate;// Format: YYYY-MM-DD
+ String get id; String get name; String? get age;@JsonKey(name: 'birth_date') String? get birthDate;// Format: YYYY-MM-DD
  String? get sex;// "Male" or "Female"
- String? get phoneNumber; String? get mobilePhoneNumber; String? get address; String? get cardAvailability;// "Yes" or "No"
- String? get registrationDate;// Format: YYYY-MM-DD
- String? get batteryOrderDate; List<HearingAid>? get hearingAid; List<Repair>? get repairs; String? get note;
+@JsonKey(name: 'phone_number') String? get phoneNumber;@JsonKey(name: 'mobile_phone_number') String? get mobilePhoneNumber; String? get address;@JsonKey(name: 'card_availability') String? get cardAvailability;// "Yes" or "No"
+@JsonKey(name: 'registration_date') String? get registrationDate;// Format: YYYY-MM-DD
+@JsonKey(name: 'battery_order_date') String? get batteryOrderDate;@JsonKey(name: 'hearing_aids') List<HearingAid>? get hearingAid; List<Repair>? get repairs; String? get note;
 /// Create a copy of Customer
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -323,7 +326,7 @@ abstract mixin class $CustomerCopyWith<$Res>  {
   factory $CustomerCopyWith(Customer value, $Res Function(Customer) _then) = _$CustomerCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? age, String? birthDate, String? sex, String? phoneNumber, String? mobilePhoneNumber, String? address, String? cardAvailability, String? registrationDate, String? batteryOrderDate, List<HearingAid>? hearingAid, List<Repair>? repairs, String? note
+ String id, String name, String? age,@JsonKey(name: 'birth_date') String? birthDate, String? sex,@JsonKey(name: 'phone_number') String? phoneNumber,@JsonKey(name: 'mobile_phone_number') String? mobilePhoneNumber, String? address,@JsonKey(name: 'card_availability') String? cardAvailability,@JsonKey(name: 'registration_date') String? registrationDate,@JsonKey(name: 'battery_order_date') String? batteryOrderDate,@JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid, List<Repair>? repairs, String? note
 });
 
 
@@ -441,7 +444,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? age,  String? birthDate,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Customer() when $default != null:
 return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.repairs,_that.note);case _:
@@ -462,7 +465,7 @@ return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? age,  String? birthDate,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _Customer():
 return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.repairs,_that.note);case _:
@@ -482,7 +485,7 @@ return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? age,  String? birthDate,  String? sex,  String? phoneNumber,  String? mobilePhoneNumber,  String? address,  String? cardAvailability,  String? registrationDate,  String? batteryOrderDate,  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _Customer() when $default != null:
 return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.repairs,_that.note);case _:
@@ -497,26 +500,26 @@ return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.ph
 @JsonSerializable()
 
 class _Customer implements Customer {
-  const _Customer({required this.id, required this.name, this.age, this.birthDate, this.sex, this.phoneNumber, this.mobilePhoneNumber, this.address, this.cardAvailability, this.registrationDate, this.batteryOrderDate, final  List<HearingAid>? hearingAid, final  List<Repair>? repairs, this.note}): _hearingAid = hearingAid,_repairs = repairs;
+  const _Customer({required this.id, required this.name, this.age, @JsonKey(name: 'birth_date') this.birthDate, this.sex, @JsonKey(name: 'phone_number') this.phoneNumber, @JsonKey(name: 'mobile_phone_number') this.mobilePhoneNumber, this.address, @JsonKey(name: 'card_availability') this.cardAvailability, @JsonKey(name: 'registration_date') this.registrationDate, @JsonKey(name: 'battery_order_date') this.batteryOrderDate, @JsonKey(name: 'hearing_aids') final  List<HearingAid>? hearingAid, final  List<Repair>? repairs, this.note}): _hearingAid = hearingAid,_repairs = repairs;
   factory _Customer.fromJson(Map<String, dynamic> json) => _$CustomerFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override final  String? age;
-@override final  String? birthDate;
+@override@JsonKey(name: 'birth_date') final  String? birthDate;
 // Format: YYYY-MM-DD
 @override final  String? sex;
 // "Male" or "Female"
-@override final  String? phoneNumber;
-@override final  String? mobilePhoneNumber;
+@override@JsonKey(name: 'phone_number') final  String? phoneNumber;
+@override@JsonKey(name: 'mobile_phone_number') final  String? mobilePhoneNumber;
 @override final  String? address;
-@override final  String? cardAvailability;
+@override@JsonKey(name: 'card_availability') final  String? cardAvailability;
 // "Yes" or "No"
-@override final  String? registrationDate;
+@override@JsonKey(name: 'registration_date') final  String? registrationDate;
 // Format: YYYY-MM-DD
-@override final  String? batteryOrderDate;
+@override@JsonKey(name: 'battery_order_date') final  String? batteryOrderDate;
  final  List<HearingAid>? _hearingAid;
-@override List<HearingAid>? get hearingAid {
+@override@JsonKey(name: 'hearing_aids') List<HearingAid>? get hearingAid {
   final value = _hearingAid;
   if (value == null) return null;
   if (_hearingAid is EqualUnmodifiableListView) return _hearingAid;
@@ -568,7 +571,7 @@ abstract mixin class _$CustomerCopyWith<$Res> implements $CustomerCopyWith<$Res>
   factory _$CustomerCopyWith(_Customer value, $Res Function(_Customer) _then) = __$CustomerCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? age, String? birthDate, String? sex, String? phoneNumber, String? mobilePhoneNumber, String? address, String? cardAvailability, String? registrationDate, String? batteryOrderDate, List<HearingAid>? hearingAid, List<Repair>? repairs, String? note
+ String id, String name, String? age,@JsonKey(name: 'birth_date') String? birthDate, String? sex,@JsonKey(name: 'phone_number') String? phoneNumber,@JsonKey(name: 'mobile_phone_number') String? mobilePhoneNumber, String? address,@JsonKey(name: 'card_availability') String? cardAvailability,@JsonKey(name: 'registration_date') String? registrationDate,@JsonKey(name: 'battery_order_date') String? batteryOrderDate,@JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid, List<Repair>? repairs, String? note
 });
 
 

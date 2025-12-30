@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
 import 'customer_detail_sheet.dart';
+
+part 'customer_list_screen.g.dart';
+
+@riverpod
+class SearchQuery extends _$SearchQuery {
+  @override
+  String build() {
+    return '';
+  }
+
+  void set(String query) {
+    state = query;
+  }
+}
 
 class CustomerListScreen extends ConsumerStatefulWidget {
   final String filter; // 'all', 'purchase', 'repair'
@@ -16,9 +31,17 @@ class CustomerListScreen extends ConsumerStatefulWidget {
 }
 
 class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
-  final TextEditingController _searchController = TextEditingController();
+  late TextEditingController _searchController;
   int _selectedFilterIndex = 0; // 0: All, 1: 1W, 2: 3W, 3: 7W, 4: 1Y
   bool _isSanitizing = false; // Loading state logic
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(
+      text: ref.read(searchQueryProvider),
+    );
+  }
 
   @override
   void dispose() {
@@ -97,7 +120,8 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   }
 
   List<Customer> _filterCustomers(List<Customer> customers) {
-    final query = _searchController.text.toLowerCase();
+    // Use the provider value for filtering
+    final query = ref.read(searchQueryProvider).toLowerCase();
     final now = DateTime.now();
 
     return customers.where((customer) {
@@ -221,6 +245,20 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   @override
   Widget build(BuildContext context) {
     final customersAsync = ref.watch(customersListProvider);
+    // Watch search query to rebuild when it changes (although TextField updates it locally too)
+    // We use ref.watch only to trigger rebuild filter.
+    // However, TextField logic is distinct.
+    ref.watch(searchQueryProvider);
+
+    // Sync local controller with global state
+    ref.listen(searchQueryProvider, (previous, next) {
+      if (_searchController.text != next) {
+        _searchController.text = next;
+        _searchController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _searchController.text.length),
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -247,6 +285,15 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               decoration: InputDecoration(
                 hintText: '이름 또는 전화번호 검색', // Search Name or Phone
                 prefixIcon: const Icon(Icons.search),
+                suffixIcon: ref.watch(searchQueryProvider).isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref.read(searchQueryProvider.notifier).set('');
+                        },
+                      )
+                    : null,
                 contentPadding: EdgeInsets.zero,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -257,7 +304,9 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                   context,
                 ).colorScheme.surfaceContainerHighest,
               ),
-              onChanged: (_) => setState(() {}),
+              onChanged: (value) {
+                ref.read(searchQueryProvider.notifier).set(value);
+              },
             ),
           ),
         ),
@@ -299,7 +348,25 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                     final filtered = _filterCustomers(customers);
 
                     if (filtered.isEmpty) {
-                      return const Center(child: Text('검색 결과가 없습니다.'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.search_off_rounded,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              '검색 결과가 없습니다.',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }
 
                     return RefreshIndicator(
@@ -374,10 +441,25 @@ class _CustomerListTile extends StatelessWidget {
           context: context,
           isScrollControlled: true,
           useSafeArea: true,
+          useRootNavigator: true,
           builder: (context) => CustomerDetailSheet(customer: customer),
         );
       },
-      leading: null,
+      leading: CircleAvatar(
+        radius: 20,
+        backgroundColor: Colors
+            .primaries[customer.name.hashCode % Colors.primaries.length]
+            .shade100,
+        child: Text(
+          customer.name.isNotEmpty ? customer.name[0] : '?',
+          style: TextStyle(
+            color: Colors
+                .primaries[customer.name.hashCode % Colors.primaries.length]
+                .shade900,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       title: Text(
         customer.name,
         style: const TextStyle(fontWeight: FontWeight.bold),

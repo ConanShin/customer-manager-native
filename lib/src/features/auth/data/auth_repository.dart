@@ -1,23 +1,25 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'auth_repository.g.dart';
 
 @riverpod
 Stream<User?> authStateChanges(Ref ref) {
-  return FirebaseAuth.instance.authStateChanges();
+  return Supabase.instance.client.auth.onAuthStateChange.map(
+    (state) => state.session?.user,
+  );
 }
 
 class AuthService {
-  final FirebaseAuth _auth;
-  AuthService(this._auth);
+  final SupabaseClient _supabase;
+  AuthService(this._supabase);
 
   Future<void> signOut() async {
-    await _auth.signOut();
+    await _supabase.auth.signOut();
   }
 }
 
 final authServiceProvider = Provider(
-  (ref) => AuthService(FirebaseAuth.instance),
+  (ref) => AuthService(Supabase.instance.client),
 );

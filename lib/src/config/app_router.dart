@@ -6,7 +6,7 @@ import '../features/customers/presentation/customer_list_screen.dart';
 import '../features/customers/presentation/customer_form_screen.dart';
 import '../features/home/settings_screen.dart';
 import '../shared/presentation/scaffold_with_navbar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/data/auth_repository.dart';
 

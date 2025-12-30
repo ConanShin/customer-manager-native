@@ -10,6 +10,7 @@ _HearingAid _$HearingAidFromJson(Map<String, dynamic> json) => _HearingAid(
   side: json['side'] as String,
   model: json['model'] as String,
   date: json['date'] as String,
+  customerId: json['customer_id'] as String?,
 );
 
 Map<String, dynamic> _$HearingAidToJson(_HearingAid instance) =>
@@ -17,21 +18,22 @@ Map<String, dynamic> _$HearingAidToJson(_HearingAid instance) =>
       'side': instance.side,
       'model': instance.model,
       'date': instance.date,
+      'customer_id': instance.customerId,
     };
 
 _Customer _$CustomerFromJson(Map<String, dynamic> json) => _Customer(
   id: json['id'] as String,
   name: json['name'] as String,
   age: json['age'] as String?,
-  birthDate: json['birthDate'] as String?,
+  birthDate: json['birth_date'] as String?,
   sex: json['sex'] as String?,
-  phoneNumber: json['phoneNumber'] as String?,
-  mobilePhoneNumber: json['mobilePhoneNumber'] as String?,
+  phoneNumber: json['phone_number'] as String?,
+  mobilePhoneNumber: json['mobile_phone_number'] as String?,
   address: json['address'] as String?,
-  cardAvailability: json['cardAvailability'] as String?,
-  registrationDate: json['registrationDate'] as String?,
-  batteryOrderDate: json['batteryOrderDate'] as String?,
-  hearingAid: (json['hearingAid'] as List<dynamic>?)
+  cardAvailability: json['card_availability'] as String?,
+  registrationDate: json['registration_date'] as String?,
+  batteryOrderDate: json['battery_order_date'] as String?,
+  hearingAid: (json['hearing_aids'] as List<dynamic>?)
       ?.map((e) => HearingAid.fromJson(e as Map<String, dynamic>))
       .toList(),
   repairs: (json['repairs'] as List<dynamic>?)
@@ -44,15 +46,15 @@ Map<String, dynamic> _$CustomerToJson(_Customer instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'age': instance.age,
-  'birthDate': instance.birthDate,
+  'birth_date': instance.birthDate,
   'sex': instance.sex,
-  'phoneNumber': instance.phoneNumber,
-  'mobilePhoneNumber': instance.mobilePhoneNumber,
+  'phone_number': instance.phoneNumber,
+  'mobile_phone_number': instance.mobilePhoneNumber,
   'address': instance.address,
-  'cardAvailability': instance.cardAvailability,
-  'registrationDate': instance.registrationDate,
-  'batteryOrderDate': instance.batteryOrderDate,
-  'hearingAid': instance.hearingAid,
+  'card_availability': instance.cardAvailability,
+  'registration_date': instance.registrationDate,
+  'battery_order_date': instance.batteryOrderDate,
+  'hearing_aids': instance.hearingAid,
   'repairs': instance.repairs,
   'note': instance.note,
 };

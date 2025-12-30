@@ -7,17 +7,19 @@ part of 'repair.dart';
 // **************************************************************************
 
 _Repair _$RepairFromJson(Map<String, dynamic> json) => _Repair(
-  id: json['id'] as String,
+  id: _toString(json['id']),
   date: json['date'] as String,
   content: json['content'] as String,
-  isCompleted: json['isCompleted'] as bool? ?? false,
+  isCompleted: json['is_completed'] as bool? ?? false,
   cost: json['cost'] as String?,
+  customerId: json['customer_id'] as String?,
 );
 
 Map<String, dynamic> _$RepairToJson(_Repair instance) => <String, dynamic>{
   'id': instance.id,
   'date': instance.date,
   'content': instance.content,
-  'isCompleted': instance.isCompleted,
+  'is_completed': instance.isCompleted,
   'cost': instance.cost,
+  'customer_id': instance.customerId,
 };

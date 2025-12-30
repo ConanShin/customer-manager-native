@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'repair.dart';
 
+// ignore: invalid_annotation_target
+
 part 'customer.freezed.dart';
 part 'customer.g.dart';
 
@@ -10,6 +12,7 @@ abstract class HearingAid with _$HearingAid {
     required String side, // "left" or "right"
     required String model,
     required String date,
+    @JsonKey(name: 'customer_id') String? customerId,
   }) = _HearingAid;
 
   factory HearingAid.fromJson(Map<String, dynamic> json) =>
@@ -22,15 +25,17 @@ abstract class Customer with _$Customer {
     required String id,
     required String name,
     String? age,
-    String? birthDate, // Format: YYYY-MM-DD
+    @JsonKey(name: 'birth_date') String? birthDate, // Format: YYYY-MM-DD
     String? sex, // "Male" or "Female"
-    String? phoneNumber,
-    String? mobilePhoneNumber,
+    @JsonKey(name: 'phone_number') String? phoneNumber,
+    @JsonKey(name: 'mobile_phone_number') String? mobilePhoneNumber,
     String? address,
+    @JsonKey(name: 'card_availability')
     String? cardAvailability, // "Yes" or "No"
+    @JsonKey(name: 'registration_date')
     String? registrationDate, // Format: YYYY-MM-DD
-    String? batteryOrderDate,
-    List<HearingAid>? hearingAid,
+    @JsonKey(name: 'battery_order_date') String? batteryOrderDate,
+    @JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid,
     List<Repair>? repairs,
     String? note,
   }) = _Customer;

@@ -207,6 +207,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildHeader(),
+            const SizedBox(height: 32),
             _buildBasicSection(),
             const SizedBox(height: 24),
             _buildActionButtons(),
@@ -224,6 +226,72 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  // --- 0. Header (Avatar & Name) ---
+  Widget _buildHeader() {
+    // Generate a consistent color based on name
+    final color =
+        Colors.primaries[_customer.name.hashCode % Colors.primaries.length];
+
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 40,
+          backgroundColor: color.shade100,
+          child: Text(
+            _customer.name.isNotEmpty ? _customer.name[0] : '?',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: color.shade900,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Balancing invisible widget to ensure Name is centered
+            Opacity(
+              opacity: 0,
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.edit, size: 18),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+              ),
+            ),
+            Text(
+              _customer.name,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: () => _startEditing(EditSection.basic),
+              icon: const Icon(Icons.edit, size: 18),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              color: Colors.grey,
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${_customer.age ?? "나이 미상"}세 • ${_customer.sex == 'Male'
+              ? '남'
+              : _customer.sex == 'Female'
+              ? '여'
+              : '성별 미상'}',
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+      ],
     );
   }
 
@@ -296,45 +364,7 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
     }
 
     // View Mode
-    return Center(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 48.0,
-            ), // Add padding to avoid icon interaction
-            child: Column(
-              children: [
-                Text(
-                  _customer.name,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (_customer.age != null && _customer.age!.isNotEmpty)
-                  Text(
-                    '${_customer.age}세 • ${_customer.sex == 'Male' ? '남성' : '여성'}${_customer.birthDate != null ? '\n(${_customer.birthDate})' : ''}',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
-              ],
-            ),
-          ),
-          Positioned(
-            right: 0,
-            top: 0,
-            child: IconButton(
-              icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
-              onPressed: () => _startEditing(EditSection.basic),
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   // --- Actions Row ---
