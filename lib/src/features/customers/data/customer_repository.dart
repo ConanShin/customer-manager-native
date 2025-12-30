@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../domain/customer.dart';
 import '../domain/repair.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'customer_repository.g.dart';
 
@@ -352,6 +353,92 @@ class CustomerRepository {
       logs.add('Error during sanitization: $e');
     }
     return logs;
+  }
+
+  Future<void> migrateToSupabase() async {
+    print('Starting migration to Supabase...');
+    // Access Supabase client (assumes Supabase.initialize() has been called)
+    final supabase = Supabase.instance.client;
+    final customers = await getCustomers();
+
+    int successCount = 0;
+    int failCount = 0;
+
+    for (final customer in customers) {
+      try {
+        // 1. Insert Customer
+        // Helper to convert empty strings to null for date fields if needed,
+        // strictly speaking Supabase/Postgres dates can't be empty string.
+        String? toDate(String? val) {
+          if (val == null || val.trim().isEmpty) return null;
+          // Validate format YYYY-MM-DD
+          if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(val.trim())) {
+            return val.trim();
+          }
+          return null;
+        }
+
+        await supabase.from('customers').upsert({
+          'id': customer.id,
+          'name': customer.name,
+          'age': customer.age,
+          'birth_date': toDate(customer.birthDate),
+          'sex': customer.sex,
+          'phone_number': customer.phoneNumber,
+          'mobile_phone_number': customer.mobilePhoneNumber,
+          'address': customer.address,
+          'card_availability': customer.cardAvailability,
+          'registration_date': toDate(customer.registrationDate),
+          'battery_order_date': customer.batteryOrderDate,
+          'note': customer.note,
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+
+        // 2. Insert Hearing Aids
+        if (customer.hearingAid != null && customer.hearingAid!.isNotEmpty) {
+          final hearingAidsData = customer.hearingAid!
+              .map(
+                (ha) => {
+                  'customer_id': customer.id,
+                  'side': ha.side,
+                  'model': ha.model,
+                  'date': ha.date,
+                },
+              )
+              .toList();
+          await supabase.from('hearing_aids').upsert(hearingAidsData);
+        }
+
+        // 3. Insert Repairs
+        if (customer.repairs != null && customer.repairs!.isNotEmpty) {
+          final repairsData = customer.repairs!.map((r) {
+            // Generate a unique ID if the generic one from local parsing was used
+            // Or just prefix with customer ID to ensure uniqueness
+            final uniqueRepairId = '${customer.id}_${r.id}';
+
+            return {
+              'id': uniqueRepairId,
+              'customer_id': customer.id,
+              'date': r.date,
+              'content': r.content,
+              'is_completed': r.isCompleted,
+              'cost': r.cost,
+            };
+          }).toList();
+          await supabase.from('repairs').upsert(repairsData);
+        }
+
+        print('Migrated customer: ${customer.name}');
+        successCount++;
+      } catch (e) {
+        print(
+          'Failed to migrate customer ${customer.name} (${customer.id}): $e',
+        );
+        failCount++;
+      }
+    }
+
+    print('Migration complete. Success: $successCount, Failed: $failCount');
   }
 }
 
