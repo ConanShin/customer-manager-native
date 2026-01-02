@@ -11,7 +11,7 @@ abstract class Repair with _$Repair {
   const factory Repair({
     // Supabase ID which might be int, converted to String
     @JsonKey(fromJson: _toString) required String id,
-    required String date,
+    String? date,
     required String content,
     @JsonKey(name: 'is_completed') @Default(false) bool isCompleted,
     String? cost,

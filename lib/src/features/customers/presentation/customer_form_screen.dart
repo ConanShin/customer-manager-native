@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
+import 'customer_avatar.dart';
 
 class CustomerFormScreen extends ConsumerStatefulWidget {
   final String? customerId;
@@ -33,6 +37,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   String _sex = 'Male';
   String _cardAvailability = 'No';
   List<HearingAid> _hearingAids = [];
+  File? _selectedImage;
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -105,35 +111,70 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
     return age.toString();
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1000,
+      maxHeight: 1000,
+      imageQuality: 70,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
+      final repo = ref.read(customerRepositoryProvider);
+      final customerId = widget.customerId ?? const Uuid().v4();
+
       final customer = Customer(
-        id: widget.customerId ?? '',
+        id: customerId,
         name: _nameController.text,
         age: _calculateAge(_birthDateController.text),
-        birthDate: _birthDateController.text,
+        birthDate: _birthDateController.text.isEmpty
+            ? null
+            : _birthDateController.text,
         sex: _sex,
         mobilePhoneNumber: _mobileController.text,
         phoneNumber: _phoneController.text,
         address: _addressController.text,
         cardAvailability: _cardAvailability,
-        registrationDate: _registrationDateController.text,
+        registrationDate: _registrationDateController.text.isEmpty
+            ? null
+            : _registrationDateController.text,
         batteryOrderDate: _batteryOrderDateController.text.isEmpty
             ? null
             : _batteryOrderDateController.text,
-        hearingAid: _hearingAids.isEmpty ? null : _hearingAids,
+        hearingAid: _hearingAids.isEmpty
+            ? null
+            : _hearingAids
+                  .map(
+                    (ha) => ha.copyWith(
+                      date: (ha.date == null || ha.date!.isEmpty)
+                          ? null
+                          : ha.date,
+                    ),
+                  )
+                  .toList(),
         note: _noteController.text,
       );
 
-      final repo = ref.read(customerRepositoryProvider);
       if (widget.customerId != null) {
         await repo.updateCustomer(customer);
       } else {
         await repo.addCustomer(customer);
+      }
+
+      if (_selectedImage != null) {
+        await repo.uploadProfilePicture(customerId, _selectedImage!);
       }
 
       ref.invalidate(customersListProvider);
@@ -229,6 +270,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            _buildImageSection(),
+            const SizedBox(height: 20),
             _buildBasicSection(),
             const SizedBox(height: 20),
             _buildContactSection(),
@@ -269,6 +312,58 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
             ...children,
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImageSection() {
+    return Center(
+      child: Stack(
+        children: [
+          CustomerAvatar(
+            customer: widget.customerId != null
+                ? ref
+                      .watch(customersListProvider)
+                      .when(
+                        data: (list) => list.firstWhere(
+                          (c) => c.id == widget.customerId,
+                          orElse: () => Customer.empty(),
+                        ),
+                        loading: () => Customer.empty(),
+                        error: (_, __) => Customer.empty(),
+                      )
+                : Customer.empty().copyWith(name: _nameController.text),
+            radius: 60,
+            fontSize: 48,
+            imageFile: _selectedImage,
+          ),
+          if (_isLoading)
+            Positioned.fill(
+              child: ClipOval(
+                child: Container(
+                  color: Colors.black26,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 4,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              radius: 18,
+              child: IconButton(
+                icon: const Icon(Icons.edit, size: 18, color: Colors.white),
+                onPressed: _isLoading ? null : _pickImage,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -442,7 +537,12 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         OutlinedButton.icon(
           onPressed: () => setState(
             () => _hearingAids.add(
-              const HearingAid(side: 'left', model: '', date: ''),
+              HearingAid(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                side: 'left',
+                model: '',
+                date: '',
+              ),
             ),
           ),
           icon: const Icon(Icons.add),
@@ -555,14 +655,14 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   }
 
   Widget _buildDatePickerInline({
-    required String date,
+    required String? date,
     required ValueChanged<String> onChanged,
   }) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
-          initialDate: DateTime.tryParse(date) ?? DateTime.now(),
+          initialDate: DateTime.tryParse(date ?? '') ?? DateTime.now(),
           firstDate: DateTime(2000),
           lastDate: DateTime.now(),
           locale: const Locale('ko', 'KR'),
@@ -578,9 +678,11 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
             const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
             const SizedBox(width: 8),
             Text(
-              date.isEmpty ? '구입일 선택' : date,
+              date == null || date.isEmpty ? '구입일 선택' : date,
               style: TextStyle(
-                color: date.isEmpty ? Colors.grey : Colors.black,
+                color: (date == null || date.isEmpty)
+                    ? Colors.grey
+                    : Colors.black,
               ),
             ),
           ],

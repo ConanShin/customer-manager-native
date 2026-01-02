@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
 import '../../customers/domain/repair.dart';
+import 'customer_avatar.dart';
 
 enum EditSection { none, basic, contact, hearingAid, note, etc }
 
@@ -38,6 +41,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
   String _cardAvailability = 'No';
   // For Hearing Aid, we might need a more complex controller or just a list copy
   List<HearingAid> _tempHearingAids = [];
+  File? _selectedImage;
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -100,6 +105,54 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
       age--;
     }
     return age.toString();
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1000,
+      maxHeight: 1000,
+      imageQuality: 70,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+      // Automatically save when image is picked?
+      // Or wait for manual save?
+      // Given the current UI, better to upload immediately and refresh.
+      await _uploadSelectedImage();
+    }
+  }
+
+  Future<void> _uploadSelectedImage() async {
+    if (_selectedImage == null) return;
+    setState(() => _isLoading = true);
+    try {
+      final repo = ref.read(customerRepositoryProvider);
+      await repo.uploadProfilePicture(_customer.id, _selectedImage!);
+
+      // Invalidate and await the refresh
+      ref.invalidate(customersListProvider);
+      final list = await ref.read(customersListProvider.future);
+
+      // Update local state with fresh data (including new updated_at)
+      final updated = list.firstWhere((c) => c.id == _customer.id);
+
+      setState(() {
+        _customer = updated;
+        _selectedImage = null;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _save() async {
@@ -231,23 +284,43 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
 
   // --- 0. Header (Avatar & Name) ---
   Widget _buildHeader() {
-    // Generate a consistent color based on name
-    final color =
-        Colors.primaries[_customer.name.hashCode % Colors.primaries.length];
-
     return Column(
       children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: color.shade100,
-          child: Text(
-            _customer.name.isNotEmpty ? _customer.name[0] : '?',
-            style: TextStyle(
+        Stack(
+          children: [
+            CustomerAvatar(
+              customer: _customer,
+              radius: 40,
               fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: color.shade900,
+              imageFile: _selectedImage,
             ),
-          ),
+            if (_isLoading)
+              Positioned.fill(
+                child: ClipOval(
+                  child: Container(
+                    color: Colors.black26,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 3,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: _isLoading ? null : _pickImage,
+                child: CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  radius: 14,
+                  child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         Row(
@@ -504,7 +577,7 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
               return Card(
                 child: ListTile(
                   title: Text('${ha.model} (${ha.side})'),
-                  subtitle: Text(ha.date),
+                  subtitle: Text(ha.date ?? '날짜 미상'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
@@ -554,7 +627,7 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            ha.date,
+                            ha.date ?? '날짜 미상',
                             style: const TextStyle(color: Colors.grey),
                           ),
                         ],
@@ -763,10 +836,10 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
     // Sort logic
     final sortedRepairs = List.of(repairs)
       ..sort((a, b) {
-        final dateA =
-            DateTime.tryParse(a.date.replaceAll('.', '-')) ?? DateTime(1900);
-        final dateB =
-            DateTime.tryParse(b.date.replaceAll('.', '-')) ?? DateTime(1900);
+        final dateAStr = a.date?.replaceAll('.', '-') ?? '1900-01-01';
+        final dateBStr = b.date?.replaceAll('.', '-') ?? '1900-01-01';
+        final dateA = DateTime.tryParse(dateAStr) ?? DateTime(1900);
+        final dateB = DateTime.tryParse(dateBStr) ?? DateTime(1900);
         return dateB.compareTo(dateA);
       });
 
@@ -855,7 +928,7 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              repair.date,
+                              repair.date ?? '날짜 미상',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -1343,6 +1416,8 @@ class __AddHearingAidDialogState extends State<_AddHearingAidDialog> {
                         Navigator.pop(
                           context,
                           HearingAid(
+                            id: DateTime.now().millisecondsSinceEpoch
+                                .toString(),
                             model: _modelController.text,
                             date: _dateController.text,
                             side: _side,

@@ -7,14 +7,16 @@ part of 'customer.dart';
 // **************************************************************************
 
 _HearingAid _$HearingAidFromJson(Map<String, dynamic> json) => _HearingAid(
+  id: _toString(json['id']),
   side: json['side'] as String,
   model: json['model'] as String,
-  date: json['date'] as String,
+  date: json['date'] as String?,
   customerId: json['customer_id'] as String?,
 );
 
 Map<String, dynamic> _$HearingAidToJson(_HearingAid instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'side': instance.side,
       'model': instance.model,
       'date': instance.date,
@@ -40,6 +42,7 @@ _Customer _$CustomerFromJson(Map<String, dynamic> json) => _Customer(
       ?.map((e) => Repair.fromJson(e as Map<String, dynamic>))
       .toList(),
   note: json['note'] as String?,
+  updatedAt: json['updated_at'] as String?,
 );
 
 Map<String, dynamic> _$CustomerToJson(_Customer instance) => <String, dynamic>{
@@ -57,4 +60,5 @@ Map<String, dynamic> _$CustomerToJson(_Customer instance) => <String, dynamic>{
   'hearing_aids': instance.hearingAid,
   'repairs': instance.repairs,
   'note': instance.note,
+  'updated_at': instance.updatedAt,
 };

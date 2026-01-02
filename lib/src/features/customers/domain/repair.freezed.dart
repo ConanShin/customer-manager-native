@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$Repair {
 
 // Supabase ID which might be int, converted to String
-@JsonKey(fromJson: _toString) String get id; String get date; String get content;@JsonKey(name: 'is_completed') bool get isCompleted; String? get cost;@JsonKey(name: 'customer_id') String? get customerId;
+@JsonKey(fromJson: _toString) String get id; String? get date; String get content;@JsonKey(name: 'is_completed') bool get isCompleted; String? get cost;@JsonKey(name: 'customer_id') String? get customerId;
 /// Create a copy of Repair
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,7 +49,7 @@ abstract mixin class $RepairCopyWith<$Res>  {
   factory $RepairCopyWith(Repair value, $Res Function(Repair) _then) = _$RepairCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(fromJson: _toString) String id, String date, String content,@JsonKey(name: 'is_completed') bool isCompleted, String? cost,@JsonKey(name: 'customer_id') String? customerId
+@JsonKey(fromJson: _toString) String id, String? date, String content,@JsonKey(name: 'is_completed') bool isCompleted, String? cost,@JsonKey(name: 'customer_id') String? customerId
 });
 
 
@@ -66,11 +66,11 @@ class _$RepairCopyWithImpl<$Res>
 
 /// Create a copy of Repair
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? date = null,Object? content = null,Object? isCompleted = null,Object? cost = freezed,Object? customerId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? date = freezed,Object? content = null,Object? isCompleted = null,Object? cost = freezed,Object? customerId = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
+as String,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as String?,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
 as String,isCompleted: null == isCompleted ? _self.isCompleted : isCompleted // ignore: cast_nullable_to_non_nullable
 as bool,cost: freezed == cost ? _self.cost : cost // ignore: cast_nullable_to_non_nullable
 as String?,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
@@ -159,7 +159,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _toString)  String id,  String date,  String content, @JsonKey(name: 'is_completed')  bool isCompleted,  String? cost, @JsonKey(name: 'customer_id')  String? customerId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _toString)  String id,  String? date,  String content, @JsonKey(name: 'is_completed')  bool isCompleted,  String? cost, @JsonKey(name: 'customer_id')  String? customerId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Repair() when $default != null:
 return $default(_that.id,_that.date,_that.content,_that.isCompleted,_that.cost,_that.customerId);case _:
@@ -180,7 +180,7 @@ return $default(_that.id,_that.date,_that.content,_that.isCompleted,_that.cost,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _toString)  String id,  String date,  String content, @JsonKey(name: 'is_completed')  bool isCompleted,  String? cost, @JsonKey(name: 'customer_id')  String? customerId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _toString)  String id,  String? date,  String content, @JsonKey(name: 'is_completed')  bool isCompleted,  String? cost, @JsonKey(name: 'customer_id')  String? customerId)  $default,) {final _that = this;
 switch (_that) {
 case _Repair():
 return $default(_that.id,_that.date,_that.content,_that.isCompleted,_that.cost,_that.customerId);case _:
@@ -200,7 +200,7 @@ return $default(_that.id,_that.date,_that.content,_that.isCompleted,_that.cost,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(fromJson: _toString)  String id,  String date,  String content, @JsonKey(name: 'is_completed')  bool isCompleted,  String? cost, @JsonKey(name: 'customer_id')  String? customerId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(fromJson: _toString)  String id,  String? date,  String content, @JsonKey(name: 'is_completed')  bool isCompleted,  String? cost, @JsonKey(name: 'customer_id')  String? customerId)?  $default,) {final _that = this;
 switch (_that) {
 case _Repair() when $default != null:
 return $default(_that.id,_that.date,_that.content,_that.isCompleted,_that.cost,_that.customerId);case _:
@@ -215,12 +215,12 @@ return $default(_that.id,_that.date,_that.content,_that.isCompleted,_that.cost,_
 @JsonSerializable()
 
 class _Repair implements Repair {
-  const _Repair({@JsonKey(fromJson: _toString) required this.id, required this.date, required this.content, @JsonKey(name: 'is_completed') this.isCompleted = false, this.cost, @JsonKey(name: 'customer_id') this.customerId});
+  const _Repair({@JsonKey(fromJson: _toString) required this.id, this.date, required this.content, @JsonKey(name: 'is_completed') this.isCompleted = false, this.cost, @JsonKey(name: 'customer_id') this.customerId});
   factory _Repair.fromJson(Map<String, dynamic> json) => _$RepairFromJson(json);
 
 // Supabase ID which might be int, converted to String
 @override@JsonKey(fromJson: _toString) final  String id;
-@override final  String date;
+@override final  String? date;
 @override final  String content;
 @override@JsonKey(name: 'is_completed') final  bool isCompleted;
 @override final  String? cost;
@@ -259,7 +259,7 @@ abstract mixin class _$RepairCopyWith<$Res> implements $RepairCopyWith<$Res> {
   factory _$RepairCopyWith(_Repair value, $Res Function(_Repair) _then) = __$RepairCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(fromJson: _toString) String id, String date, String content,@JsonKey(name: 'is_completed') bool isCompleted, String? cost,@JsonKey(name: 'customer_id') String? customerId
+@JsonKey(fromJson: _toString) String id, String? date, String content,@JsonKey(name: 'is_completed') bool isCompleted, String? cost,@JsonKey(name: 'customer_id') String? customerId
 });
 
 
@@ -276,11 +276,11 @@ class __$RepairCopyWithImpl<$Res>
 
 /// Create a copy of Repair
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? date = null,Object? content = null,Object? isCompleted = null,Object? cost = freezed,Object? customerId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? date = freezed,Object? content = null,Object? isCompleted = null,Object? cost = freezed,Object? customerId = freezed,}) {
   return _then(_Repair(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
+as String,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as String?,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
 as String,isCompleted: null == isCompleted ? _self.isCompleted : isCompleted // ignore: cast_nullable_to_non_nullable
 as bool,cost: freezed == cost ? _self.cost : cost // ignore: cast_nullable_to_non_nullable
 as String?,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable

@@ -6,12 +6,16 @@ import 'repair.dart';
 part 'customer.freezed.dart';
 part 'customer.g.dart';
 
+// Helper for JSON serialization
+String _toString(dynamic value) => value.toString();
+
 @freezed
 abstract class HearingAid with _$HearingAid {
   const factory HearingAid({
+    @JsonKey(fromJson: _toString) required String id,
     required String side, // "left" or "right"
     required String model,
-    required String date,
+    String? date,
     @JsonKey(name: 'customer_id') String? customerId,
   }) = _HearingAid;
 
@@ -38,6 +42,7 @@ abstract class Customer with _$Customer {
     @JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid,
     List<Repair>? repairs,
     String? note,
+    @JsonKey(name: 'updated_at') String? updatedAt,
   }) = _Customer;
 
   factory Customer.fromJson(Map<String, dynamic> json) =>

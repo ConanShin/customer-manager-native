@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../domain/customer.dart';
@@ -20,7 +22,7 @@ class CustomerRepository {
         final response = await _client
             .from('customers')
             .select('*, hearing_aids(*), repairs(*)')
-            .order('registration_date', ascending: false)
+            .order('updated_at', ascending: false, nullsFirst: false)
             .range(from, to);
 
         final List<dynamic> data = response as List<dynamic>;
@@ -61,6 +63,7 @@ class CustomerRepository {
     // In my plan, I said "Keeping text ID".
     // Let's assume `customer.id` is valid.
 
+    customerJson['updated_at'] = DateTime.now().toIso8601String();
     await _client.from('customers').insert(customerJson);
 
     if (hearingAids != null && hearingAids.isNotEmpty) {
@@ -92,6 +95,7 @@ class CustomerRepository {
     final hearingAids = customerJson.remove('hearing_aids') as List?;
     final repairs = customerJson.remove('repairs') as List?;
 
+    customerJson['updated_at'] = DateTime.now().toIso8601String();
     await _client.from('customers').update(customerJson).eq('id', customer.id);
 
     // Simplistic approach: delete all and re-create for nested for now
@@ -131,7 +135,62 @@ class CustomerRepository {
   }
 
   Future<void> deleteCustomer(String customerId) async {
+    // 1. Delete from Supabase (Cascade might handle nested if configured, but repo handles top level)
     await _client.from('customers').delete().eq('id', customerId);
+
+    // 2. Delete from Firebase Storage
+    try {
+      final storage = FirebaseStorage.instanceFor(
+        bucket: 'starkey.appspot.com',
+      );
+      final storageRef = storage
+          .ref()
+          .child('customer_profiles')
+          .child(customerId);
+
+      await storageRef.delete();
+      print('✓ Profile picture deleted successfully for $customerId');
+    } catch (e) {
+      // Ignore if file doesn't exist (Error code 404 or object-not-found)
+      print('ℹ Could not delete profile picture (may not exist): $e');
+    }
+  }
+
+  Future<void> uploadProfilePicture(String customerId, File file) async {
+    try {
+      final storage = FirebaseStorage.instanceFor(
+        bucket: 'starkey.appspot.com',
+      );
+      final storageRef = storage
+          .ref()
+          .child('customer_profiles')
+          .child(customerId);
+
+      print('File size: ${file.lengthSync()} bytes');
+      final uploadTask = storageRef.putFile(
+        file,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        print(
+          'Upload task state: ${snapshot.state} (${snapshot.bytesTransferred}/${snapshot.totalBytes})',
+        );
+      }, onError: (e) => print('Upload task error: $e'));
+
+      await uploadTask;
+      print('✓ Profile picture uploaded successfully for $customerId');
+
+      // Update the updated_at field in Supabase to bust cache
+      await _client
+          .from('customers')
+          .update({'updated_at': DateTime.now().toIso8601String()})
+          .eq('id', customerId);
+    } catch (e, stack) {
+      print('✗ Error uploading profile picture for $customerId: $e');
+      print(stack);
+      rethrow;
+    }
   }
 
   // Sanitization legacy method - keep empty or remove?

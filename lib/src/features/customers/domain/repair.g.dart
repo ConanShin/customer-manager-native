@@ -8,7 +8,7 @@ part of 'repair.dart';
 
 _Repair _$RepairFromJson(Map<String, dynamic> json) => _Repair(
   id: _toString(json['id']),
-  date: json['date'] as String,
+  date: json['date'] as String?,
   content: json['content'] as String,
   isCompleted: json['is_completed'] as bool? ?? false,
   cost: json['cost'] as String?,

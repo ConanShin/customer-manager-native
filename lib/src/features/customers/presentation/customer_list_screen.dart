@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../customers/data/customer_repository.dart';
 import '../../customers/domain/customer.dart';
+import 'customer_avatar.dart';
 import 'customer_detail_sheet.dart';
 
 part 'customer_list_screen.g.dart';
@@ -169,7 +170,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         }
         for (final ha in customer.hearingAid!) {
           if (parseDate(ha.date) != null) {
-            validDates.add(ha.date);
+            validDates.add(ha.date!);
           }
         }
 
@@ -192,7 +193,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         }
         for (final repair in customer.repairs!) {
           if (parseDate(repair.date) != null) {
-            validDates.add(repair.date);
+            validDates.add(repair.date!);
           }
         }
 
@@ -203,12 +204,14 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         }
       }
 
-      if (dateToUse == null || dateToUse.isEmpty)
+      if (dateToUse == null || dateToUse.isEmpty) {
         return _selectedFilterIndex == 0;
+      }
 
       final dateToCheck = parseDate(dateToUse);
-      if (dateToCheck == null)
+      if (dateToCheck == null) {
         return false; // Exclude invalid dates from specific filters
+      }
 
       final diff = now.difference(dateToCheck).inDays;
 
@@ -445,21 +448,7 @@ class _CustomerListTile extends StatelessWidget {
           builder: (context) => CustomerDetailSheet(customer: customer),
         );
       },
-      leading: CircleAvatar(
-        radius: 20,
-        backgroundColor: Colors
-            .primaries[customer.name.hashCode % Colors.primaries.length]
-            .shade100,
-        child: Text(
-          customer.name.isNotEmpty ? customer.name[0] : '?',
-          style: TextStyle(
-            color: Colors
-                .primaries[customer.name.hashCode % Colors.primaries.length]
-                .shade900,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      leading: CustomerAvatar(customer: customer),
       title: Text(
         customer.name,
         style: const TextStyle(fontWeight: FontWeight.bold),
