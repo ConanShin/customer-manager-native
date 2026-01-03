@@ -37,6 +37,11 @@ _Customer _$CustomerFromJson(Map<String, dynamic> json) => _Customer(
   batteryOrderDate: json['battery_order_date'] as String?,
   cochlearImplant: json['cochlear_implant'] as String?,
   workersComp: json['workers_comp'] as String?,
+  fittingTest1: json['fitting_test_1'] as String?,
+  fittingTest2: json['fitting_test_2'] as String?,
+  fittingTest3: json['fitting_test_3'] as String?,
+  fittingTest4: json['fitting_test_4'] as String?,
+  fittingTest5: json['fitting_test_5'] as String?,
   hearingAid: (json['hearing_aids'] as List<dynamic>?)
       ?.map((e) => HearingAid.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -61,6 +66,11 @@ Map<String, dynamic> _$CustomerToJson(_Customer instance) => <String, dynamic>{
   'battery_order_date': instance.batteryOrderDate,
   'cochlear_implant': instance.cochlearImplant,
   'workers_comp': instance.workersComp,
+  'fitting_test_1': instance.fittingTest1,
+  'fitting_test_2': instance.fittingTest2,
+  'fitting_test_3': instance.fittingTest3,
+  'fitting_test_4': instance.fittingTest4,
+  'fitting_test_5': instance.fittingTest5,
   'hearing_aids': instance.hearingAid,
   'repairs': instance.repairs,
   'note': instance.note,

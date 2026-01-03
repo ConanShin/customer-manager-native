@@ -41,6 +41,11 @@ abstract class Customer with _$Customer {
     @JsonKey(name: 'battery_order_date') String? batteryOrderDate,
     @JsonKey(name: 'cochlear_implant') String? cochlearImplant, // "Yes" or "No"
     @JsonKey(name: 'workers_comp') String? workersComp, // "Yes" or "No"
+    @JsonKey(name: 'fitting_test_1') String? fittingTest1,
+    @JsonKey(name: 'fitting_test_2') String? fittingTest2,
+    @JsonKey(name: 'fitting_test_3') String? fittingTest3,
+    @JsonKey(name: 'fitting_test_4') String? fittingTest4,
+    @JsonKey(name: 'fitting_test_5') String? fittingTest5,
     @JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid,
     List<Repair>? repairs,
     String? note,
@@ -62,5 +67,10 @@ abstract class Customer with _$Customer {
     cochlearImplant: 'No',
     workersComp: 'No',
     registrationDate: '',
+    fittingTest1: '',
+    fittingTest2: '',
+    fittingTest3: '',
+    fittingTest4: '',
+    fittingTest5: '',
   );
 }

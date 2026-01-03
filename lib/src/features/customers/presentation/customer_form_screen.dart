@@ -32,6 +32,11 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   final _noteController = TextEditingController();
   final _registrationDateController = TextEditingController();
   final _batteryOrderDateController = TextEditingController();
+  final _fittingTest1Controller = TextEditingController();
+  final _fittingTest2Controller = TextEditingController();
+  final _fittingTest3Controller = TextEditingController();
+  final _fittingTest4Controller = TextEditingController();
+  final _fittingTest5Controller = TextEditingController();
 
   // State
   String _sex = 'Male';
@@ -64,6 +69,11 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
     _noteController.dispose();
     _registrationDateController.dispose();
     _batteryOrderDateController.dispose();
+    _fittingTest1Controller.dispose();
+    _fittingTest2Controller.dispose();
+    _fittingTest3Controller.dispose();
+    _fittingTest4Controller.dispose();
+    _fittingTest5Controller.dispose();
     super.dispose();
   }
 
@@ -93,6 +103,11 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
       _noteController.text = c.note ?? '';
       _registrationDateController.text = c.registrationDate ?? '';
       _batteryOrderDateController.text = c.batteryOrderDate ?? '';
+      _fittingTest1Controller.text = c.fittingTest1 ?? '';
+      _fittingTest2Controller.text = c.fittingTest2 ?? '';
+      _fittingTest3Controller.text = c.fittingTest3 ?? '';
+      _fittingTest4Controller.text = c.fittingTest4 ?? '';
+      _fittingTest5Controller.text = c.fittingTest5 ?? '';
 
       _sex = c.sex ?? 'Male';
       _cardAvailability = c.cardAvailability ?? 'No';
@@ -187,6 +202,21 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         batteryOrderDate: _batteryOrderDateController.text.isEmpty
             ? null
             : _batteryOrderDateController.text,
+        fittingTest1: _fittingTest1Controller.text.isEmpty
+            ? null
+            : _fittingTest1Controller.text,
+        fittingTest2: _fittingTest2Controller.text.isEmpty
+            ? null
+            : _fittingTest2Controller.text,
+        fittingTest3: _fittingTest3Controller.text.isEmpty
+            ? null
+            : _fittingTest3Controller.text,
+        fittingTest4: _fittingTest4Controller.text.isEmpty
+            ? null
+            : _fittingTest4Controller.text,
+        fittingTest5: _fittingTest5Controller.text.isEmpty
+            ? null
+            : _fittingTest5Controller.text,
         hearingAid: _hearingAids.isEmpty
             ? null
             : _hearingAids
@@ -313,10 +343,29 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
             _buildHearingAidSection(),
             const SizedBox(height: 20),
             _buildEtcSection(),
+            const SizedBox(height: 20),
+            _buildFittingTestSection(),
             const SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFittingTestSection() {
+    return _buildSectionCard(
+      title: '적합 검사 (1차~5차)',
+      children: [
+        _buildDatePickerField('1차 적합 검사', _fittingTest1Controller),
+        const SizedBox(height: 12),
+        _buildDatePickerField('2차 적합 검사', _fittingTest2Controller),
+        const SizedBox(height: 12),
+        _buildDatePickerField('3차 적합 검사', _fittingTest3Controller),
+        const SizedBox(height: 12),
+        _buildDatePickerField('4차 적합 검사', _fittingTest4Controller),
+        const SizedBox(height: 12),
+        _buildDatePickerField('5차 적합 검사', _fittingTest5Controller),
+      ],
     );
   }
 

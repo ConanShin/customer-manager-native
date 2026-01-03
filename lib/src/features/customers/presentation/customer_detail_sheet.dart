@@ -35,6 +35,11 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
   final _noteController = TextEditingController();
   final _registrationDateController = TextEditingController();
   final _batteryOrderDateController = TextEditingController();
+  final _fittingTest1Controller = TextEditingController();
+  final _fittingTest2Controller = TextEditingController();
+  final _fittingTest3Controller = TextEditingController();
+  final _fittingTest4Controller = TextEditingController();
+  final _fittingTest5Controller = TextEditingController();
 
   // Temporary State for Edit
   String _sex = 'Male';
@@ -63,6 +68,11 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
     _noteController.text = _customer.note ?? '';
     _registrationDateController.text = _customer.registrationDate ?? '';
     _batteryOrderDateController.text = _customer.batteryOrderDate ?? '';
+    _fittingTest1Controller.text = _customer.fittingTest1 ?? '';
+    _fittingTest2Controller.text = _customer.fittingTest2 ?? '';
+    _fittingTest3Controller.text = _customer.fittingTest3 ?? '';
+    _fittingTest4Controller.text = _customer.fittingTest4 ?? '';
+    _fittingTest5Controller.text = _customer.fittingTest5 ?? '';
 
     _sex = _customer.sex ?? 'Male';
     _cardAvailability = _customer.cardAvailability ?? 'No';
@@ -82,6 +92,11 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
     _noteController.dispose();
     _registrationDateController.dispose();
     _batteryOrderDateController.dispose();
+    _fittingTest1Controller.dispose();
+    _fittingTest2Controller.dispose();
+    _fittingTest3Controller.dispose();
+    _fittingTest4Controller.dispose();
+    _fittingTest5Controller.dispose();
     super.dispose();
   }
 
@@ -207,6 +222,21 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
         batteryOrderDate: _batteryOrderDateController.text.isEmpty
             ? null
             : _batteryOrderDateController.text,
+        fittingTest1: _fittingTest1Controller.text.isEmpty
+            ? null
+            : _fittingTest1Controller.text,
+        fittingTest2: _fittingTest2Controller.text.isEmpty
+            ? null
+            : _fittingTest2Controller.text,
+        fittingTest3: _fittingTest3Controller.text.isEmpty
+            ? null
+            : _fittingTest3Controller.text,
+        fittingTest4: _fittingTest4Controller.text.isEmpty
+            ? null
+            : _fittingTest4Controller.text,
+        fittingTest5: _fittingTest5Controller.text.isEmpty
+            ? null
+            : _fittingTest5Controller.text,
         hearingAid: _tempHearingAids.isEmpty
             ? null
             : _tempHearingAids
@@ -825,6 +855,21 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+            const Text(
+              '적합 검사',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            _buildDatePickerField('1차 적합 검사', _fittingTest1Controller),
+            const SizedBox(height: 12),
+            _buildDatePickerField('2차 적합 검사', _fittingTest2Controller),
+            const SizedBox(height: 12),
+            _buildDatePickerField('3차 적합 검사', _fittingTest3Controller),
+            const SizedBox(height: 12),
+            _buildDatePickerField('4차 적합 검사', _fittingTest4Controller),
+            const SizedBox(height: 12),
+            _buildDatePickerField('5차 적합 검사', _fittingTest5Controller),
           ],
         ),
         onSave: _save,
@@ -876,6 +921,41 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
               ],
             ),
           ),
+          if (_customer.fittingTest1 != null ||
+              _customer.fittingTest2 != null ||
+              _customer.fittingTest3 != null ||
+              _customer.fittingTest4 != null ||
+              _customer.fittingTest5 != null) ...[
+            const Padding(
+              padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
+              child: Divider(),
+            ),
+            const Text(
+              '적합 검사',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                if (_customer.fittingTest1 != null)
+                  _buildFittingBadge('1차', _customer.fittingTest1!),
+                if (_customer.fittingTest2 != null)
+                  _buildFittingBadge('2차', _customer.fittingTest2!),
+                if (_customer.fittingTest3 != null)
+                  _buildFittingBadge('3차', _customer.fittingTest3!),
+                if (_customer.fittingTest4 != null)
+                  _buildFittingBadge('4차', _customer.fittingTest4!),
+                if (_customer.fittingTest5 != null)
+                  _buildFittingBadge('5차', _customer.fittingTest5!),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -1350,6 +1430,71 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDatePickerField(
+    String label,
+    TextEditingController controller, {
+    IconData? icon,
+  }) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: DateTime.tryParse(controller.text) ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now(),
+          locale: const Locale('ko', 'KR'),
+        );
+        if (picked != null) {
+          setState(() => controller.text = picked.toString().split(' ')[0]);
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: IgnorePointer(
+        child: TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: label,
+            suffixIcon: Icon(icon ?? Icons.calendar_today, size: 20),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            filled: true,
+            fillColor: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            isDense: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFittingBadge(String label, String date) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            date,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
     );
   }
 }
