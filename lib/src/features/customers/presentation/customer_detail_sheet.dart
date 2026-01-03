@@ -39,6 +39,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
   // Temporary State for Edit
   String _sex = 'Male';
   String _cardAvailability = 'No';
+  String _cochlearImplant = 'No';
+  String _workersComp = 'No';
   // For Hearing Aid, we might need a more complex controller or just a list copy
   List<HearingAid> _tempHearingAids = [];
   File? _selectedImage;
@@ -64,6 +66,8 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
 
     _sex = _customer.sex ?? 'Male';
     _cardAvailability = _customer.cardAvailability ?? 'No';
+    _cochlearImplant = _customer.cochlearImplant ?? 'No';
+    _workersComp = _customer.workersComp ?? 'No';
     _tempHearingAids = List.from(_customer.hearingAid ?? []);
   }
 
@@ -107,9 +111,9 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
     return age.toString();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       maxWidth: 1000,
       maxHeight: 1000,
       imageQuality: 70,
@@ -119,11 +123,36 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
       setState(() {
         _selectedImage = File(pickedFile.path);
       });
-      // Automatically save when image is picked?
-      // Or wait for manual save?
-      // Given the current UI, better to upload immediately and refresh.
       await _uploadSelectedImage();
     }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('갤러리에서 선택'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('카메라로 촬영'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _uploadSelectedImage() async {
@@ -162,17 +191,33 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
       final updatedCustomer = _customer.copyWith(
         name: _nameController.text,
         age: _calculateAge(_birthDateController.text),
-        birthDate: _birthDateController.text,
+        birthDate: _birthDateController.text.isEmpty
+            ? null
+            : _birthDateController.text,
         sex: _sex,
         mobilePhoneNumber: _mobileController.text,
         phoneNumber: _phoneController.text,
         address: _addressController.text,
         cardAvailability: _cardAvailability,
-        registrationDate: _registrationDateController.text,
+        cochlearImplant: _cochlearImplant,
+        workersComp: _workersComp,
+        registrationDate: _registrationDateController.text.isEmpty
+            ? null
+            : _registrationDateController.text,
         batteryOrderDate: _batteryOrderDateController.text.isEmpty
             ? null
             : _batteryOrderDateController.text,
-        hearingAid: _tempHearingAids.isEmpty ? null : _tempHearingAids,
+        hearingAid: _tempHearingAids.isEmpty
+            ? null
+            : _tempHearingAids
+                  .map(
+                    (ha) => ha.copyWith(
+                      date: (ha.date == null || ha.date!.isEmpty)
+                          ? null
+                          : ha.date,
+                    ),
+                  )
+                  .toList(),
         note: _noteController.text,
       );
 
@@ -312,7 +357,7 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
               right: 0,
               bottom: 0,
               child: GestureDetector(
-                onTap: _isLoading ? null : _pickImage,
+                onTap: _isLoading ? null : _showImageSourceDialog,
                 child: CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   radius: 14,
@@ -755,40 +800,30 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Welfare Card Selection
-            Text(
-              '복지카드 여부',
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(color: Colors.grey[700]),
+            _buildToggleEditRow(
+              '복지카드',
+              _cardAvailability,
+              (v) => setState(() => _cardAvailability = v),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(
-                    value: 'Yes',
-                    label: Text('있음'),
-                    icon: Icon(Icons.check_circle_outline),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildToggleEditRow(
+                    '인공와우',
+                    _cochlearImplant,
+                    (v) => setState(() => _cochlearImplant = v),
                   ),
-                  ButtonSegment(
-                    value: 'No',
-                    label: Text('없음'),
-                    icon: Icon(Icons.cancel_outlined),
-                  ),
-                ],
-                selected: {_cardAvailability},
-                onSelectionChanged: (newSelection) {
-                  setState(() => _cardAvailability = newSelection.first);
-                },
-                showSelectedIcon: false,
-                style: ButtonStyle(
-                  visualDensity: VisualDensity.compact,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildToggleEditRow(
+                    '산재보험',
+                    _workersComp,
+                    (v) => setState(() => _workersComp = v),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -819,7 +854,26 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
             padding: const EdgeInsets.only(top: 8.0),
             child: _buildInfoRow(
               Icons.credit_card,
-              '복지카드: ${_customer.cardAvailability == 'Yes' ? '있음' : '없음'}',
+              '복지카드: ${_customer.cardAvailability == 'Yes' ? '보유' : '미보유'}',
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildInfoRow(
+                    Icons.hearing,
+                    '인공와우: ${_customer.cochlearImplant == 'Yes' ? '적용' : '미적용'}',
+                  ),
+                ),
+                Expanded(
+                  child: _buildInfoRow(
+                    Icons.medical_services,
+                    '산재보험: ${_customer.workersComp == 'Yes' ? '적용' : '미적용'}',
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1265,6 +1319,39 @@ class _CustomerDetailSheetState extends ConsumerState<CustomerDetailSheet> {
       }
     }
   }
+
+  Widget _buildToggleEditRow(
+    String label,
+    String current,
+    Function(String) onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        SegmentedButton<String>(
+          segments: [
+            ButtonSegment(
+              value: 'Yes',
+              label: Text(label == '복지카드' ? '보유' : '적용'),
+            ),
+            ButtonSegment(
+              value: 'No',
+              label: Text(label == '복지카드' ? '미보유' : '미적용'),
+            ),
+          ],
+          selected: {current},
+          onSelectionChanged: (v) => onChanged(v.first),
+          showSelectedIcon: false,
+          style: const ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 // Simple Dialog for adding Hearing Aid
@@ -1419,7 +1506,9 @@ class __AddHearingAidDialogState extends State<_AddHearingAidDialog> {
                             id: DateTime.now().millisecondsSinceEpoch
                                 .toString(),
                             model: _modelController.text,
-                            date: _dateController.text,
+                            date: _dateController.text.isEmpty
+                                ? null
+                                : _dateController.text,
                             side: _side,
                           ),
                         );
@@ -1588,7 +1677,9 @@ class __AddRepairDialogState extends State<_AddRepairDialog> {
                             context,
                             Repair(
                               id: 'repair_${DateTime.now().millisecondsSinceEpoch}',
-                              date: _dateController.text,
+                              date: _dateController.text.isEmpty
+                                  ? null
+                                  : _dateController.text,
                               content: _contentController.text,
                               cost: _costController.text,
                               isCompleted: false,

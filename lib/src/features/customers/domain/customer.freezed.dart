@@ -296,7 +296,9 @@ mixin _$Customer {
  String? get sex;// "Male" or "Female"
 @JsonKey(name: 'phone_number') String? get phoneNumber;@JsonKey(name: 'mobile_phone_number') String? get mobilePhoneNumber; String? get address;@JsonKey(name: 'card_availability') String? get cardAvailability;// "Yes" or "No"
 @JsonKey(name: 'registration_date') String? get registrationDate;// Format: YYYY-MM-DD
-@JsonKey(name: 'battery_order_date') String? get batteryOrderDate;@JsonKey(name: 'hearing_aids') List<HearingAid>? get hearingAid; List<Repair>? get repairs; String? get note;@JsonKey(name: 'updated_at') String? get updatedAt;
+@JsonKey(name: 'battery_order_date') String? get batteryOrderDate;@JsonKey(name: 'cochlear_implant') String? get cochlearImplant;// "Yes" or "No"
+@JsonKey(name: 'workers_comp') String? get workersComp;// "Yes" or "No"
+@JsonKey(name: 'hearing_aids') List<HearingAid>? get hearingAid; List<Repair>? get repairs; String? get note;@JsonKey(name: 'updated_at') String? get updatedAt;
 /// Create a copy of Customer
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -309,16 +311,16 @@ $CustomerCopyWith<Customer> get copyWith => _$CustomerCopyWithImpl<Customer>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&const DeepCollectionEquality().equals(other.hearingAid, hearingAid)&&const DeepCollectionEquality().equals(other.repairs, repairs)&&(identical(other.note, note) || other.note == note)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&(identical(other.cochlearImplant, cochlearImplant) || other.cochlearImplant == cochlearImplant)&&(identical(other.workersComp, workersComp) || other.workersComp == workersComp)&&const DeepCollectionEquality().equals(other.hearingAid, hearingAid)&&const DeepCollectionEquality().equals(other.repairs, repairs)&&(identical(other.note, note) || other.note == note)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,age,birthDate,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,const DeepCollectionEquality().hash(hearingAid),const DeepCollectionEquality().hash(repairs),note,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,age,birthDate,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,cochlearImplant,workersComp,const DeepCollectionEquality().hash(hearingAid),const DeepCollectionEquality().hash(repairs),note,updatedAt);
 
 @override
 String toString() {
-  return 'Customer(id: $id, name: $name, age: $age, birthDate: $birthDate, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, hearingAid: $hearingAid, repairs: $repairs, note: $note, updatedAt: $updatedAt)';
+  return 'Customer(id: $id, name: $name, age: $age, birthDate: $birthDate, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, cochlearImplant: $cochlearImplant, workersComp: $workersComp, hearingAid: $hearingAid, repairs: $repairs, note: $note, updatedAt: $updatedAt)';
 }
 
 
@@ -329,7 +331,7 @@ abstract mixin class $CustomerCopyWith<$Res>  {
   factory $CustomerCopyWith(Customer value, $Res Function(Customer) _then) = _$CustomerCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? age,@JsonKey(name: 'birth_date') String? birthDate, String? sex,@JsonKey(name: 'phone_number') String? phoneNumber,@JsonKey(name: 'mobile_phone_number') String? mobilePhoneNumber, String? address,@JsonKey(name: 'card_availability') String? cardAvailability,@JsonKey(name: 'registration_date') String? registrationDate,@JsonKey(name: 'battery_order_date') String? batteryOrderDate,@JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid, List<Repair>? repairs, String? note,@JsonKey(name: 'updated_at') String? updatedAt
+ String id, String name, String? age,@JsonKey(name: 'birth_date') String? birthDate, String? sex,@JsonKey(name: 'phone_number') String? phoneNumber,@JsonKey(name: 'mobile_phone_number') String? mobilePhoneNumber, String? address,@JsonKey(name: 'card_availability') String? cardAvailability,@JsonKey(name: 'registration_date') String? registrationDate,@JsonKey(name: 'battery_order_date') String? batteryOrderDate,@JsonKey(name: 'cochlear_implant') String? cochlearImplant,@JsonKey(name: 'workers_comp') String? workersComp,@JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid, List<Repair>? repairs, String? note,@JsonKey(name: 'updated_at') String? updatedAt
 });
 
 
@@ -346,7 +348,7 @@ class _$CustomerCopyWithImpl<$Res>
 
 /// Create a copy of Customer
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? birthDate = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? hearingAid = freezed,Object? repairs = freezed,Object? note = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? birthDate = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? cochlearImplant = freezed,Object? workersComp = freezed,Object? hearingAid = freezed,Object? repairs = freezed,Object? note = freezed,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -359,6 +361,8 @@ as String?,address: freezed == address ? _self.address : address // ignore: cast
 as String?,cardAvailability: freezed == cardAvailability ? _self.cardAvailability : cardAvailability // ignore: cast_nullable_to_non_nullable
 as String?,registrationDate: freezed == registrationDate ? _self.registrationDate : registrationDate // ignore: cast_nullable_to_non_nullable
 as String?,batteryOrderDate: freezed == batteryOrderDate ? _self.batteryOrderDate : batteryOrderDate // ignore: cast_nullable_to_non_nullable
+as String?,cochlearImplant: freezed == cochlearImplant ? _self.cochlearImplant : cochlearImplant // ignore: cast_nullable_to_non_nullable
+as String?,workersComp: freezed == workersComp ? _self.workersComp : workersComp // ignore: cast_nullable_to_non_nullable
 as String?,hearingAid: freezed == hearingAid ? _self.hearingAid : hearingAid // ignore: cast_nullable_to_non_nullable
 as List<HearingAid>?,repairs: freezed == repairs ? _self.repairs : repairs // ignore: cast_nullable_to_non_nullable
 as List<Repair>?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
@@ -448,10 +452,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note, @JsonKey(name: 'updated_at')  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'cochlear_implant')  String? cochlearImplant, @JsonKey(name: 'workers_comp')  String? workersComp, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note, @JsonKey(name: 'updated_at')  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Customer() when $default != null:
-return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.repairs,_that.note,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.cochlearImplant,_that.workersComp,_that.hearingAid,_that.repairs,_that.note,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -469,10 +473,10 @@ return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note, @JsonKey(name: 'updated_at')  String? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'cochlear_implant')  String? cochlearImplant, @JsonKey(name: 'workers_comp')  String? workersComp, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note, @JsonKey(name: 'updated_at')  String? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Customer():
-return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.repairs,_that.note,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.cochlearImplant,_that.workersComp,_that.hearingAid,_that.repairs,_that.note,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -489,10 +493,10 @@ return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note, @JsonKey(name: 'updated_at')  String? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? age, @JsonKey(name: 'birth_date')  String? birthDate,  String? sex, @JsonKey(name: 'phone_number')  String? phoneNumber, @JsonKey(name: 'mobile_phone_number')  String? mobilePhoneNumber,  String? address, @JsonKey(name: 'card_availability')  String? cardAvailability, @JsonKey(name: 'registration_date')  String? registrationDate, @JsonKey(name: 'battery_order_date')  String? batteryOrderDate, @JsonKey(name: 'cochlear_implant')  String? cochlearImplant, @JsonKey(name: 'workers_comp')  String? workersComp, @JsonKey(name: 'hearing_aids')  List<HearingAid>? hearingAid,  List<Repair>? repairs,  String? note, @JsonKey(name: 'updated_at')  String? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Customer() when $default != null:
-return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.hearingAid,_that.repairs,_that.note,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.phoneNumber,_that.mobilePhoneNumber,_that.address,_that.cardAvailability,_that.registrationDate,_that.batteryOrderDate,_that.cochlearImplant,_that.workersComp,_that.hearingAid,_that.repairs,_that.note,_that.updatedAt);case _:
   return null;
 
 }
@@ -504,7 +508,7 @@ return $default(_that.id,_that.name,_that.age,_that.birthDate,_that.sex,_that.ph
 @JsonSerializable()
 
 class _Customer implements Customer {
-  const _Customer({required this.id, required this.name, this.age, @JsonKey(name: 'birth_date') this.birthDate, this.sex, @JsonKey(name: 'phone_number') this.phoneNumber, @JsonKey(name: 'mobile_phone_number') this.mobilePhoneNumber, this.address, @JsonKey(name: 'card_availability') this.cardAvailability, @JsonKey(name: 'registration_date') this.registrationDate, @JsonKey(name: 'battery_order_date') this.batteryOrderDate, @JsonKey(name: 'hearing_aids') final  List<HearingAid>? hearingAid, final  List<Repair>? repairs, this.note, @JsonKey(name: 'updated_at') this.updatedAt}): _hearingAid = hearingAid,_repairs = repairs;
+  const _Customer({required this.id, required this.name, this.age, @JsonKey(name: 'birth_date') this.birthDate, this.sex, @JsonKey(name: 'phone_number') this.phoneNumber, @JsonKey(name: 'mobile_phone_number') this.mobilePhoneNumber, this.address, @JsonKey(name: 'card_availability') this.cardAvailability, @JsonKey(name: 'registration_date') this.registrationDate, @JsonKey(name: 'battery_order_date') this.batteryOrderDate, @JsonKey(name: 'cochlear_implant') this.cochlearImplant, @JsonKey(name: 'workers_comp') this.workersComp, @JsonKey(name: 'hearing_aids') final  List<HearingAid>? hearingAid, final  List<Repair>? repairs, this.note, @JsonKey(name: 'updated_at') this.updatedAt}): _hearingAid = hearingAid,_repairs = repairs;
   factory _Customer.fromJson(Map<String, dynamic> json) => _$CustomerFromJson(json);
 
 @override final  String id;
@@ -522,7 +526,12 @@ class _Customer implements Customer {
 @override@JsonKey(name: 'registration_date') final  String? registrationDate;
 // Format: YYYY-MM-DD
 @override@JsonKey(name: 'battery_order_date') final  String? batteryOrderDate;
+@override@JsonKey(name: 'cochlear_implant') final  String? cochlearImplant;
+// "Yes" or "No"
+@override@JsonKey(name: 'workers_comp') final  String? workersComp;
+// "Yes" or "No"
  final  List<HearingAid>? _hearingAid;
+// "Yes" or "No"
 @override@JsonKey(name: 'hearing_aids') List<HearingAid>? get hearingAid {
   final value = _hearingAid;
   if (value == null) return null;
@@ -556,16 +565,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&const DeepCollectionEquality().equals(other._hearingAid, _hearingAid)&&const DeepCollectionEquality().equals(other._repairs, _repairs)&&(identical(other.note, note) || other.note == note)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Customer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.mobilePhoneNumber, mobilePhoneNumber) || other.mobilePhoneNumber == mobilePhoneNumber)&&(identical(other.address, address) || other.address == address)&&(identical(other.cardAvailability, cardAvailability) || other.cardAvailability == cardAvailability)&&(identical(other.registrationDate, registrationDate) || other.registrationDate == registrationDate)&&(identical(other.batteryOrderDate, batteryOrderDate) || other.batteryOrderDate == batteryOrderDate)&&(identical(other.cochlearImplant, cochlearImplant) || other.cochlearImplant == cochlearImplant)&&(identical(other.workersComp, workersComp) || other.workersComp == workersComp)&&const DeepCollectionEquality().equals(other._hearingAid, _hearingAid)&&const DeepCollectionEquality().equals(other._repairs, _repairs)&&(identical(other.note, note) || other.note == note)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,age,birthDate,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,const DeepCollectionEquality().hash(_hearingAid),const DeepCollectionEquality().hash(_repairs),note,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,age,birthDate,sex,phoneNumber,mobilePhoneNumber,address,cardAvailability,registrationDate,batteryOrderDate,cochlearImplant,workersComp,const DeepCollectionEquality().hash(_hearingAid),const DeepCollectionEquality().hash(_repairs),note,updatedAt);
 
 @override
 String toString() {
-  return 'Customer(id: $id, name: $name, age: $age, birthDate: $birthDate, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, hearingAid: $hearingAid, repairs: $repairs, note: $note, updatedAt: $updatedAt)';
+  return 'Customer(id: $id, name: $name, age: $age, birthDate: $birthDate, sex: $sex, phoneNumber: $phoneNumber, mobilePhoneNumber: $mobilePhoneNumber, address: $address, cardAvailability: $cardAvailability, registrationDate: $registrationDate, batteryOrderDate: $batteryOrderDate, cochlearImplant: $cochlearImplant, workersComp: $workersComp, hearingAid: $hearingAid, repairs: $repairs, note: $note, updatedAt: $updatedAt)';
 }
 
 
@@ -576,7 +585,7 @@ abstract mixin class _$CustomerCopyWith<$Res> implements $CustomerCopyWith<$Res>
   factory _$CustomerCopyWith(_Customer value, $Res Function(_Customer) _then) = __$CustomerCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? age,@JsonKey(name: 'birth_date') String? birthDate, String? sex,@JsonKey(name: 'phone_number') String? phoneNumber,@JsonKey(name: 'mobile_phone_number') String? mobilePhoneNumber, String? address,@JsonKey(name: 'card_availability') String? cardAvailability,@JsonKey(name: 'registration_date') String? registrationDate,@JsonKey(name: 'battery_order_date') String? batteryOrderDate,@JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid, List<Repair>? repairs, String? note,@JsonKey(name: 'updated_at') String? updatedAt
+ String id, String name, String? age,@JsonKey(name: 'birth_date') String? birthDate, String? sex,@JsonKey(name: 'phone_number') String? phoneNumber,@JsonKey(name: 'mobile_phone_number') String? mobilePhoneNumber, String? address,@JsonKey(name: 'card_availability') String? cardAvailability,@JsonKey(name: 'registration_date') String? registrationDate,@JsonKey(name: 'battery_order_date') String? batteryOrderDate,@JsonKey(name: 'cochlear_implant') String? cochlearImplant,@JsonKey(name: 'workers_comp') String? workersComp,@JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid, List<Repair>? repairs, String? note,@JsonKey(name: 'updated_at') String? updatedAt
 });
 
 
@@ -593,7 +602,7 @@ class __$CustomerCopyWithImpl<$Res>
 
 /// Create a copy of Customer
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? birthDate = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? hearingAid = freezed,Object? repairs = freezed,Object? note = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? age = freezed,Object? birthDate = freezed,Object? sex = freezed,Object? phoneNumber = freezed,Object? mobilePhoneNumber = freezed,Object? address = freezed,Object? cardAvailability = freezed,Object? registrationDate = freezed,Object? batteryOrderDate = freezed,Object? cochlearImplant = freezed,Object? workersComp = freezed,Object? hearingAid = freezed,Object? repairs = freezed,Object? note = freezed,Object? updatedAt = freezed,}) {
   return _then(_Customer(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -606,6 +615,8 @@ as String?,address: freezed == address ? _self.address : address // ignore: cast
 as String?,cardAvailability: freezed == cardAvailability ? _self.cardAvailability : cardAvailability // ignore: cast_nullable_to_non_nullable
 as String?,registrationDate: freezed == registrationDate ? _self.registrationDate : registrationDate // ignore: cast_nullable_to_non_nullable
 as String?,batteryOrderDate: freezed == batteryOrderDate ? _self.batteryOrderDate : batteryOrderDate // ignore: cast_nullable_to_non_nullable
+as String?,cochlearImplant: freezed == cochlearImplant ? _self.cochlearImplant : cochlearImplant // ignore: cast_nullable_to_non_nullable
+as String?,workersComp: freezed == workersComp ? _self.workersComp : workersComp // ignore: cast_nullable_to_non_nullable
 as String?,hearingAid: freezed == hearingAid ? _self._hearingAid : hearingAid // ignore: cast_nullable_to_non_nullable
 as List<HearingAid>?,repairs: freezed == repairs ? _self._repairs : repairs // ignore: cast_nullable_to_non_nullable
 as List<Repair>?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable

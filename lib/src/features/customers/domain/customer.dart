@@ -39,6 +39,8 @@ abstract class Customer with _$Customer {
     @JsonKey(name: 'registration_date')
     String? registrationDate, // Format: YYYY-MM-DD
     @JsonKey(name: 'battery_order_date') String? batteryOrderDate,
+    @JsonKey(name: 'cochlear_implant') String? cochlearImplant, // "Yes" or "No"
+    @JsonKey(name: 'workers_comp') String? workersComp, // "Yes" or "No"
     @JsonKey(name: 'hearing_aids') List<HearingAid>? hearingAid,
     List<Repair>? repairs,
     String? note,
@@ -57,6 +59,8 @@ abstract class Customer with _$Customer {
     mobilePhoneNumber: '',
     address: '',
     cardAvailability: 'No',
+    cochlearImplant: 'No',
+    workersComp: 'No',
     registrationDate: '',
   );
 }

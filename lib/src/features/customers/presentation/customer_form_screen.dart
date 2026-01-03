@@ -36,6 +36,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   // State
   String _sex = 'Male';
   String _cardAvailability = 'No';
+  String _cochlearImplant = 'No';
+  String _workersComp = 'No';
   List<HearingAid> _hearingAids = [];
   File? _selectedImage;
   final _picker = ImagePicker();
@@ -94,6 +96,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
 
       _sex = c.sex ?? 'Male';
       _cardAvailability = c.cardAvailability ?? 'No';
+      _cochlearImplant = c.cochlearImplant ?? 'No';
+      _workersComp = c.workersComp ?? 'No';
       _hearingAids = List.from(c.hearingAid ?? []);
     });
   }
@@ -111,9 +115,9 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
     return age.toString();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       maxWidth: 1000,
       maxHeight: 1000,
       imageQuality: 70,
@@ -124,6 +128,34 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         _selectedImage = File(pickedFile.path);
       });
     }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('갤러리에서 선택'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('카메라로 촬영'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _save() async {
@@ -147,6 +179,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         phoneNumber: _phoneController.text,
         address: _addressController.text,
         cardAvailability: _cardAvailability,
+        cochlearImplant: _cochlearImplant,
+        workersComp: _workersComp,
         registrationDate: _registrationDateController.text.isEmpty
             ? null
             : _registrationDateController.text,
@@ -359,7 +393,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
               radius: 18,
               child: IconButton(
                 icon: const Icon(Icons.edit, size: 18, color: Colors.white),
-                onPressed: _isLoading ? null : _pickImage,
+                onPressed: _isLoading ? null : _showImageSourceDialog,
               ),
             ),
           ),
@@ -418,6 +452,65 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        _buildToggleRow(
+          '복지카드',
+          _cardAvailability,
+          (v) => setState(() => _cardAvailability = v),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildToggleRow(
+                '인공와우',
+                _cochlearImplant,
+                (v) => setState(() => _cochlearImplant = v),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildToggleRow(
+                '산재보험',
+                _workersComp,
+                (v) => setState(() => _workersComp = v),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggleRow(
+    String label,
+    String current,
+    Function(String) onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        SegmentedButton<String>(
+          segments: [
+            ButtonSegment(
+              value: 'Yes',
+              label: Text(label == '복지카드' ? '보유' : '적용'),
+            ),
+            ButtonSegment(
+              value: 'No',
+              label: Text(label == '복지카드' ? '미보유' : '미적용'),
+            ),
+          ],
+          selected: {current},
+          onSelectionChanged: (v) => onChanged(v.first),
+          showSelectedIcon: false,
+          style: const ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ),
       ],
     );
