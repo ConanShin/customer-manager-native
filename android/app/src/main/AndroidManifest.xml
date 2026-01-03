@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="customer_manager_native"
+        android:label="스타키 고객 관리"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
